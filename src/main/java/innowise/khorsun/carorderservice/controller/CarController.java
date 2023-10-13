@@ -1,14 +1,14 @@
 package innowise.khorsun.carorderservice.controller;
 
-import innowise.khorsun.carorderservice.DTO.CarDTO;
-import innowise.khorsun.carorderservice.models.Car;
-import innowise.khorsun.carorderservice.services.CarService;
-import org.modelmapper.ModelMapper;
+import innowise.khorsun.carorderservice.dto.CarDto;
+
+import innowise.khorsun.carorderservice.service.impl.CarServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,49 +17,44 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/car")
 public class CarController {
 
-    private final CarService carService;
-    private final ModelMapper modelMapper;
+    private final CarServiceImpl carService;
 
     @Autowired
-    public CarController(CarService carService, ModelMapper modelMapper) {
+    public CarController(CarServiceImpl carService) {
         this.carService = carService;
-        this.modelMapper = modelMapper;
     }
 
     @GetMapping("/{id}")
-    public Optional<CarDTO> showOneCar(@PathVariable("id")Integer id){
-        return carService.showOne(id).map(this::convertToCar);
+    public Optional<CarDto> showOneCar(@PathVariable("id")Integer id){
+        return carService.showOne(id);
     }
 
     @GetMapping
-    public List<CarDTO> index(){
-        return carService.findAll().stream().map(this::convertToCar).collect(Collectors.toList());
+    public List<CarDto> index(){
+        return carService.findAll();
     }
 
     @PostMapping("/add")
-    public ResponseEntity<HttpStatus> createCar(@RequestBody CarDTO carDTO){
-        Car car = convertToCarDTO(carDTO);
-        carService.create(car);
+    public ResponseEntity<HttpStatus> createCar(@RequestBody CarDto carDTO){
+
+        carService.create(carService.convertToCar(carDTO));
         return ResponseEntity.ok(HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> delete(@PathVariable("id") Integer id){
+    public void delete(@PathVariable("id") Integer id){
         carService.delete(id);
-        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/edit")
+    public void update(@PathVariable("id")Integer id, @RequestBody CarDto carDto){
+        carService.update(id,carDto);
     }
 
 
-    private CarDTO convertToCar(Car car){
-        return modelMapper.map(car, CarDTO.class);
-    }
-    private Car convertToCarDTO(CarDTO carDTO){
-        return modelMapper.map(carDTO, Car.class);
-    }
 }

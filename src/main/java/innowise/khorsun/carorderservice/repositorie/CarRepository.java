@@ -1,6 +1,6 @@
-package innowise.khorsun.carorderservice.repositories;
+package innowise.khorsun.carorderservice.repositorie;
 
-import innowise.khorsun.carorderservice.models.Car;
+import innowise.khorsun.carorderservice.entity.Car;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

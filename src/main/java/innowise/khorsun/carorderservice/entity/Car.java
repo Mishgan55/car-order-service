@@ -1,10 +1,10 @@
-package innowise.khorsun.carorderservice.models;
+package innowise.khorsun.carorderservice.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.Hibernate;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,7 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.Objects;
+
 
 @Entity
 @Table(name = "cars")
@@ -24,30 +24,18 @@ public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    Integer id;
+    private Integer id;
     @Column(name = "place_id")
-    Integer branchId;
+    private Integer branchId;
     @Column(name = "brand")
-    String brand;
+    private String brand;
     @Column(name = "model")
-    String model;
+    private String model;
     @Column(name = "year_of_production")
-    Integer yearOfProduction;
+    private Integer yearOfProduction;
     @Column(name = "plate_number")
-    String plateNumber;
+    private String plateNumber;
     @Column(name = "is_available")
-    Boolean isAvailable;
+    private Boolean isAvailable;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Car car = (Car) o;
-        return id != null && Objects.equals(id, car.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }
