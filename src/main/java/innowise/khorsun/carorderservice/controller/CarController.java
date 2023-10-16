@@ -33,27 +33,27 @@ public class CarController {
 
     @GetMapping("/{id}")
     public Optional<CarDto> showOneCar(@PathVariable("id") Integer id) {
-        return carService.showOne(id);
+        return carService.findCarDtoById(id);
     }
 
     @GetMapping
     public List<CarDto> index() {
-        return carService.findAll();
+        return carService.findAllCar();
     }
 
     @PostMapping("/add")
     public ResponseEntity<HttpStatus> createCar(@RequestBody @Valid CarDto carDTO) {
-        carService.create(carDTO);
+        carService.createCar(carDTO);
         return ResponseEntity.ok(HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") Integer id) {
-        carService.delete(id);
+        carService.deleteCar(id);
     }
 
     @PatchMapping("/{id}/edit")
     public void update(@PathVariable("id") Integer id, @RequestBody @Valid CarDto carDto) {
-        carService.update(id, carDto);
+        carService.updateCar(id, carDto);
     }
 }

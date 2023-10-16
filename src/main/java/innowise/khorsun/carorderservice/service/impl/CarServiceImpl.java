@@ -15,67 +15,63 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CarServiceImpl implements CarService<CarDto> {
+public class CarServiceImpl implements CarService {
     private final CarRepository carRepository;
+    private final CarMapper carMapper;
 
 
     @Autowired
-    public CarServiceImpl(CarRepository carRepository) {
+    public CarServiceImpl(CarRepository carRepository, CarMapper carMapper) {
         this.carRepository = carRepository;
+        this.carMapper = carMapper;
     }
 
-    public Optional<CarDto> showOne(int id) {
-        if(carRepository.findById(id).isEmpty()){
+    public Optional<CarDto> findCarDtoById(Integer id) {
+        if (carRepository.findById(id).isEmpty()) {
             throw new CarNotFoundException("Not found");
         }
-        return carRepository.findById(id).map(CarMapper.INSTANCE::carToCarDto);
+        return carRepository.findById(id).map(carMapper::carToCarDto);
     }
 
-    public List<CarDto> findAll() {
-        return carRepository.findAll().stream().map(CarMapper.INSTANCE::carToCarDto).toList();
+    public List<CarDto> findAllCar() {
+        return carRepository.findAll().stream().map(carMapper::carToCarDto).toList();
     }
 
     @Transactional
-    public void create(CarDto carDto) {
+    public void createCar(CarDto carDto) {
         if (!isCarPlateNumberUnique(carDto.getPlateNumber())) {
             throw new DuplicateCarPlateNumberException("Car with this plate number already exists.");
         }
-        Car car = CarMapper.INSTANCE.carDtoToCar(carDto);
-        enrichCar(car);
+        Car car = carMapper.carDtoToCar(carDto);
+        enrichCarForUpdate(car);
         carRepository.save(car);
     }
 
     @Transactional
-    public void delete(int id) {
+    public void deleteCar(Integer id) {
         carRepository.deleteById(id);
     }
 
     @Transactional
-    public void update(Integer id, CarDto carDto) {
+    public void updateCar(Integer id, CarDto carDto) {
 
-        Optional<CarDto> updatedCarDto = showOne(id);
+        Optional<CarDto> updatedCarDto = findCarDtoById(id);
         if (updatedCarDto.isPresent()) {
-            CarDto updatedCar = updatedCarDto.get();
-            Car car = CarMapper.INSTANCE.carDtoToCar(updatedCar);
-            updatingCarFields(car, id, carDto);
+            Car car = carMapper.carDtoToCar(carDto);
+            enrichCarForUpdate(car, id);
             carRepository.save(car);
         } else {
             throw new CarNotFoundException("Car not found");
         }
     }
 
-
-    private void updatingCarFields(Car car, Integer id, CarDto carDto) {
+    private void enrichCarForUpdate(Car car, Integer id) {
         car.setId(id);
-        enrichCar(car);
-        car.setBrand(carDto.getBrand());
-        car.setModel(carDto.getModel());
-        car.setYearOfProduction(carDto.getYearOfProduction());
+        car.setBranchId(1);
         car.setPlateNumber(car.getPlateNumber());
-        car.setIsAvailable(carDto.getIsAvailable());
     }
 
-    private void enrichCar(Car car) {
+    private void enrichCarForUpdate(Car car) {
         car.setBranchId(1);
     }
 
