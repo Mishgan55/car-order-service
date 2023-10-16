@@ -1,6 +1,7 @@
 package innowise.khorsun.carorderservice.service.impl;
 
 import innowise.khorsun.carorderservice.dto.CarDto;
+import innowise.khorsun.carorderservice.model.CarUpdateDto;
 import innowise.khorsun.carorderservice.entity.Car;
 import innowise.khorsun.carorderservice.mapper.CarMapper;
 import innowise.khorsun.carorderservice.repositorie.CarRepository;
@@ -43,7 +44,7 @@ public class CarServiceImpl implements CarService {
             throw new DuplicateCarPlateNumberException("Car with this plate number already exists.");
         }
         Car car = carMapper.carDtoToCar(carDto);
-        enrichCarForUpdate(car);
+        enrichCarForCreate(car);
         carRepository.save(car);
     }
 
@@ -53,25 +54,19 @@ public class CarServiceImpl implements CarService {
     }
 
     @Transactional
-    public void updateCar(Integer id, CarDto carDto) {
-
-        Optional<CarDto> updatedCarDto = findCarDtoById(id);
-        if (updatedCarDto.isPresent()) {
-            Car car = carMapper.carDtoToCar(carDto);
-            enrichCarForUpdate(car, id);
-            carRepository.save(car);
+    public void updateCar(Integer id, CarUpdateDto carDto) {
+        Optional<Car> car = carRepository.findById(id);
+        if(car.isPresent()){
+            Car updatedCar = car.get();
+            updatedCar.setBrand(carDto.getBrand());
+            updatedCar.setModel(carDto.getModel());
+            updatedCar.setIsAvailable(carDto.getIsAvailable());
         } else {
             throw new CarNotFoundException("Car not found");
         }
     }
 
-    private void enrichCarForUpdate(Car car, Integer id) {
-        car.setId(id);
-        car.setBranchId(1);
-        car.setPlateNumber(car.getPlateNumber());
-    }
-
-    private void enrichCarForUpdate(Car car) {
+    private void enrichCarForCreate(Car car) {
         car.setBranchId(1);
     }
 

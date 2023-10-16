@@ -10,4 +10,5 @@ import org.springframework.stereotype.Component;
 public interface CarMapper {
     Car carDtoToCar(CarDto carDto);
     CarDto carToCarDto(Car car);
+
 }

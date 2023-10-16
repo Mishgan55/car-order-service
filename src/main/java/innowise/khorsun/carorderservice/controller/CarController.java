@@ -1,6 +1,7 @@
 package innowise.khorsun.carorderservice.controller;
 
 import innowise.khorsun.carorderservice.dto.CarDto;
+import innowise.khorsun.carorderservice.model.CarUpdateDto;
 import innowise.khorsun.carorderservice.service.impl.CarServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -53,7 +54,7 @@ public class CarController {
     }
 
     @PatchMapping("/{id}/edit")
-    public void update(@PathVariable("id") Integer id, @RequestBody @Valid CarDto carDto) {
-        carService.updateCar(id, carDto);
+    public void update(@PathVariable("id") Integer id, @RequestBody @Valid CarUpdateDto carUpdateDto) {
+        carService.updateCar(id, carUpdateDto);
     }
 }
