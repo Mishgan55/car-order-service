@@ -1,0 +1,1 @@
+alter table car_order_service_db.public.customers alter column creation_date set default current_timestamp;
