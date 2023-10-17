@@ -4,7 +4,6 @@ import innowise.khorsun.carorderservice.dto.CarDto;
 import innowise.khorsun.carorderservice.model.CarUpdateDto;
 import innowise.khorsun.carorderservice.service.impl.CarServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,28 +32,27 @@ public class CarController {
     }
 
     @GetMapping("/{id}")
-    public Optional<CarDto> showOneCar(@PathVariable("id") Integer id) {
-        return carService.findCarDtoById(id);
+    public ResponseEntity<Optional<CarDto>> getOneCar(@PathVariable("id") Integer id) {
+        return ResponseEntity.ok(carService.getCarDtoById(id));
     }
 
     @GetMapping
-    public List<CarDto> index() {
-        return carService.findAllCar();
+    public ResponseEntity<List<CarDto>> getAllCars() {
+        return ResponseEntity.ok(carService.getAllCars());
     }
 
     @PostMapping("/add")
-    public ResponseEntity<HttpStatus> createCar(@RequestBody @Valid CarDto carDTO) {
+    public void createCar(@RequestBody @Valid CarDto carDTO) {
         carService.createCar(carDTO);
-        return ResponseEntity.ok(HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable("id") Integer id) {
+    public void deleteCar(@PathVariable("id") Integer id) {
         carService.deleteCar(id);
     }
 
     @PatchMapping("/{id}/edit")
-    public void update(@PathVariable("id") Integer id, @RequestBody @Valid CarUpdateDto carUpdateDto) {
+    public void updateCar(@PathVariable("id") Integer id, @RequestBody @Valid CarUpdateDto carUpdateDto) {
         carService.updateCar(id, carUpdateDto);
     }
 }

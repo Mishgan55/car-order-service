@@ -8,8 +8,8 @@ import java.util.Optional;
 
 @Service
 public interface CarService {
-    Optional<CarDto> findCarDtoById(Integer id);
-    List<CarDto> findAllCar();
+    Optional<CarDto> getCarDtoById(Integer id);
+    List<CarDto> getAllCars();
     void createCar(CarDto carDto);
     void deleteCar(Integer id);
     void updateCar(Integer id, CarUpdateDto carUpdateDto);
