@@ -27,11 +27,10 @@ public class CarServiceImpl implements CarService {
         this.carMapper = carMapper;
     }
 
-    public Optional<CarDto> getCarDtoById(Integer id) {
-        if (carRepository.findById(id).isEmpty()) {
-            throw new CarNotFoundException("Not found");
-        }
-        return carRepository.findById(id).map(carMapper::carToCarDto);
+    public CarDto getCarDtoById(Integer id) {
+       return carRepository.findById(id)
+               .map(carMapper::carToCarDto)
+               .orElseThrow(() -> new CarNotFoundException("Not found"));
     }
 
     public List<CarDto> getAllCars() {

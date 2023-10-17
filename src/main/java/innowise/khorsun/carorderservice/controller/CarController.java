@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -32,7 +31,7 @@ public class CarController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<CarDto>> getCar(@PathVariable("id") Integer id) {
+    public ResponseEntity<CarDto> getCar(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(carService.getCarDtoById(id));
     }
 
