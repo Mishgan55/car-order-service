@@ -2,7 +2,7 @@ package innowise.khorsun.carorderservice.controller;
 
 import innowise.khorsun.carorderservice.dto.CarDto;
 import innowise.khorsun.carorderservice.model.CarUpdateDto;
-import innowise.khorsun.carorderservice.service.impl.CarServiceImpl;
+import innowise.khorsun.carorderservice.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,18 +21,18 @@ import java.util.Optional;
 
 
 @RestController
-@RequestMapping("/car")
+@RequestMapping("/cars")
 public class CarController {
 
-    private final CarServiceImpl carService;
+    private final CarService carService;
 
     @Autowired
-    public CarController(CarServiceImpl carService) {
+    public CarController(CarService carService) {
         this.carService = carService;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<CarDto>> getOneCar(@PathVariable("id") Integer id) {
+    public ResponseEntity<Optional<CarDto>> getCar(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(carService.getCarDtoById(id));
     }
 
@@ -42,17 +42,17 @@ public class CarController {
     }
 
     @PostMapping("/add")
-    public void createCar(@RequestBody @Valid CarDto carDTO) {
-        carService.createCar(carDTO);
+    public void addCar(@RequestBody @Valid CarDto carDTO) {
+        carService.addCar(carDTO);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCar(@PathVariable("id") Integer id) {
-        carService.deleteCar(id);
+    public void removeCar(@PathVariable("id") Integer id) {
+        carService.removeCar(id);
     }
 
     @PatchMapping("/{id}/edit")
-    public void updateCar(@PathVariable("id") Integer id, @RequestBody @Valid CarUpdateDto carUpdateDto) {
-        carService.updateCar(id, carUpdateDto);
+    public void editCar(@PathVariable("id") Integer id, @RequestBody @Valid CarUpdateDto carUpdateDto) {
+        carService.editCar(id, carUpdateDto);
     }
 }

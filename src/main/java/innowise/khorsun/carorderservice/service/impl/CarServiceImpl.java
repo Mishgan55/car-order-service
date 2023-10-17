@@ -39,7 +39,7 @@ public class CarServiceImpl implements CarService {
     }
 
     @Transactional
-    public void createCar(CarDto carDto) {
+    public void addCar(CarDto carDto) {
         if (!isCarPlateNumberUnique(carDto.getPlateNumber())) {
             throw new DuplicateCarPlateNumberException("Car with this plate number already exists.");
         }
@@ -49,12 +49,12 @@ public class CarServiceImpl implements CarService {
     }
 
     @Transactional
-    public void deleteCar(Integer id) {
+    public void removeCar(Integer id) {
         carRepository.deleteById(id);
     }
 
     @Transactional
-    public void updateCar(Integer id, CarUpdateDto carDto) {
+    public void editCar(Integer id, CarUpdateDto carDto) {
         Optional<Car> car = carRepository.findById(id);
         if(car.isPresent()){
             Car updatedCar = car.get();

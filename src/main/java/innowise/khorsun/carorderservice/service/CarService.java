@@ -10,8 +10,8 @@ import java.util.Optional;
 public interface CarService {
     Optional<CarDto> getCarDtoById(Integer id);
     List<CarDto> getAllCars();
-    void createCar(CarDto carDto);
-    void deleteCar(Integer id);
-    void updateCar(Integer id, CarUpdateDto carUpdateDto);
+    void addCar(CarDto carDto);
+    void removeCar(Integer id);
+    void editCar(Integer id, CarUpdateDto carUpdateDto);
 
 }
