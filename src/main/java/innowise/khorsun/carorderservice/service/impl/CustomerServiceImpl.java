@@ -78,12 +78,10 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     public boolean isCustomerEmailUnique(String email) {
-        Optional<Customer> existingCustomerByEmail = customerRepository.findCustomerByEmail(email);
-        return existingCustomerByEmail.isEmpty();
+        return customerRepository.findCustomerByEmail(email).isEmpty();
     }
 
     public boolean isCustomerPhoneNumberUnique(String phoneNumber) {
-        Optional<Customer> existingCustomerByPhoneNumber = customerRepository.findCustomerByPhoneNumber(phoneNumber);
-        return existingCustomerByPhoneNumber.isEmpty();
+        return customerRepository.findCustomerByPhoneNumber(phoneNumber).isEmpty();
     }
 }

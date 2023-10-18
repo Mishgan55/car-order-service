@@ -15,6 +15,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
@@ -42,6 +43,8 @@ public class Customer {
     private String email;
     @Column(name = "phone_number")
     @NotEmpty(message = "Phone number should not be empty!")
+    @Pattern(regexp = "^\\+\\d{12}$", message ="Invalid phone number," +
+            " write down your number using this pattern +375001234567")
     private String phoneNumber;
     @Column(name = "creation_date")
     @Temporal(TemporalType.TIMESTAMP)
