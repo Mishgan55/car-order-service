@@ -58,7 +58,6 @@ public class PlaceServiceImpl implements PlaceService {
                     existingPlace.setName(updatedPlaceDto.getName());
                     existingPlace.setAddress(updatedPlaceDto.getAddress());
                     existingPlace.setWorkHours(updatedPlaceDto.getWorkHours());
-                    existingPlace.setContactInformation(updatedPlaceDto.getContactInformation());
                 },
                 () -> {
                     throw new PlaceNotFoundException("Place not found", new Date());

@@ -14,5 +14,4 @@ public class PlaceDto {
     private String address;
     @NotEmpty(message = "Work hours shouldn't be empty")
     private String workHours;
-    private String contactInformation;
 }

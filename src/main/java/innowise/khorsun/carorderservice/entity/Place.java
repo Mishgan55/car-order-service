@@ -35,8 +35,6 @@ public class Place {
     @NotEmpty(message = "Work hours shouldn't be empty")
     @Column(name = "work_hours")
     private String workHours;
-    @Column(name = "contact_information")
-    private String contactInformation;
     @OneToMany(mappedBy = "place")
     private List<Car> car;
 }
