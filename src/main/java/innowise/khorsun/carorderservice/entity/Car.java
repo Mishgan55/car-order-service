@@ -45,6 +45,7 @@ public class Car {
     @Column(name = "is_available")
     private Boolean isAvailable;
     @Column(name = "daily_fee")
+    @NotEmpty(message = "Daily fee should not be empty")
     private BigDecimal dailyFee;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id",referencedColumnName ="id" )

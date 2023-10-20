@@ -1,7 +1,8 @@
-package innowise.khorsun.carorderservice.util.error.customer;
+package innowise.khorsun.carorderservice.util.error.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 import lombok.Setter;
 import lombok.ToString;
 
@@ -10,7 +11,7 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString
-public class CustomerNotFoundException extends RuntimeException {
+public class UserCustomerException extends RuntimeException{
     private final String message;
-    private final  Date date;
+    private final Date date;
 }
