@@ -15,6 +15,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import java.math.BigDecimal;
 
 
 @Entity
@@ -43,6 +44,8 @@ public class Car {
     private String plateNumber;
     @Column(name = "is_available")
     private Boolean isAvailable;
+    @Column(name = "daily_fee")
+    private BigDecimal dailyFee;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id",referencedColumnName ="id" )
     private Place place;
