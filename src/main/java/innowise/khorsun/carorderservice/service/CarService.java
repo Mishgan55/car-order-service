@@ -9,7 +9,7 @@ import java.util.List;
 public interface CarService {
     CarDto getCarDtoById(Integer id);
     List<CarDto> getAllCars();
-    void addCar(CarDto carDto,Integer placeId);
+    void addCar(CarDto carDto);
     void removeCar(Integer id);
     void editCar(Integer id, CarUpdateDto carUpdateDto);
 }

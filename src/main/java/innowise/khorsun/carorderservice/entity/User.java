@@ -1,5 +1,6 @@
 package innowise.khorsun.carorderservice.entity;
 
+import innowise.khorsun.carorderservice.util.enums.Role;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -56,17 +57,4 @@ public class User {
     @Column(name = "creation_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
-    public enum Role {
-        MANAGER("MANAGER"),
-        CUSTOMER("CUSTOMER");
-        private final String val;
-
-        Role(String val) {
-            this.val = val;
-        }
-
-        public String getVal() {
-            return val;
-        }
-    }
 }

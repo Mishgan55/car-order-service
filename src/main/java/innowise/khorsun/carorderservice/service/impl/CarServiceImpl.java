@@ -20,15 +20,15 @@ import java.util.Optional;
 
 @Service
 public class CarServiceImpl implements CarService {
-    private final CarRepository carRepository;
     private final PlaceRepository placeRepository;
+    private final CarRepository carRepository;
     private final CarMapper carMapper;
 
 
     @Autowired
-    public CarServiceImpl(CarRepository carRepository, PlaceRepository placeRepository, CarMapper carMapper) {
-        this.carRepository = carRepository;
+    public CarServiceImpl(PlaceRepository placeRepository, CarRepository carRepository, CarMapper carMapper) {
         this.placeRepository = placeRepository;
+        this.carRepository = carRepository;
         this.carMapper = carMapper;
     }
 
@@ -43,15 +43,14 @@ public class CarServiceImpl implements CarService {
     }
 
     @Transactional
-    public void addCar(CarDto carDto, Integer placeId) {
+    public void addCar(CarDto carDto) {
         if (!isCarPlateNumberUnique(carDto.getPlateNumber())) {
             throw new DuplicateCarPlateNumberException("Car with this plate number already exists.",new Date());
         }
-        Car car = carMapper.carDtoToCar(carDto);
-        if (placeId != null) {
-            car.setPlace(placeRepository.findById(placeId)
-                    .orElseThrow(() -> new PlaceNotFoundException("Place not found", new Date())));
+        if (placeRepository.findById(carDto.getPlaceId()).isEmpty()){
+            throw new PlaceNotFoundException("Place not found",new Date());
         }
+        Car car = carMapper.carDtoToCar(carDto);
         carRepository.save(car);
     }
 

@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
@@ -20,6 +21,8 @@ public class CarDto {
     @NotEmpty(message = "Plate number should not be empty")
     private String plateNumber;
     private Boolean isAvailable;
-    @NotEmpty(message = "Daily fee should not be empty")
+    @NotNull
     private BigDecimal dailyFee;
+    @NotNull
+    private Integer placeId;
 }

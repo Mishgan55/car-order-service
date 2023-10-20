@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -42,9 +41,8 @@ public class CarController {
     }
 
     @PostMapping("/add")
-    public void addCar(@RequestBody @Valid CarDto carDTO,
-                       @RequestParam(value = "place-id",required = false)Integer placeId) {
-        carService.addCar(carDTO,placeId);
+    public void addCar(@RequestBody @Valid CarDto carDTO) {
+        carService.addCar(carDTO);
     }
 
     @DeleteMapping("/{id}")
