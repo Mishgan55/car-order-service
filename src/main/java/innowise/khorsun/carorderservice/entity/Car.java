@@ -3,12 +3,14 @@ package innowise.khorsun.carorderservice.entity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -19,15 +21,12 @@ import javax.validation.constraints.Size;
 @Table(name = "cars")
 @Getter
 @Setter
-@ToString
 @RequiredArgsConstructor
 public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
-    @Column(name = "place_id")
-    private Integer branchId;
     @Column(name = "brand")
     @Size(min = 1,max = 50, message = "Brand's characters should be between 1 and 50")
     @NotEmpty(message = "Brand shouldn't be empty")
@@ -44,5 +43,7 @@ public class Car {
     private String plateNumber;
     @Column(name = "is_available")
     private Boolean isAvailable;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "place_id",referencedColumnName ="id" )
+    private Place place;
 }

@@ -43,7 +43,6 @@ public class CarServiceImpl implements CarService {
             throw new DuplicateCarPlateNumberException("Car with this plate number already exists.");
         }
         Car car = carMapper.carDtoToCar(carDto);
-        enrichCarForCreate(car);
         carRepository.save(car);
     }
 
@@ -63,10 +62,6 @@ public class CarServiceImpl implements CarService {
         } else {
             throw new CarNotFoundException("Car not found");
         }
-    }
-
-    private void enrichCarForCreate(Car car) {
-        car.setBranchId(1);
     }
 
     public boolean isCarPlateNumberUnique(String plateNumber) {
