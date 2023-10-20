@@ -20,7 +20,7 @@ import javax.validation.constraints.Size;
 import java.util.Date;
 
 @Entity
-@Table(name = "customers")
+@Table(name = "users")
 @Getter
 @Setter
 @ToString
@@ -46,6 +46,10 @@ public class Customer {
     @Pattern(regexp = "^\\+\\d{12}$", message ="Invalid phone number," +
             " write down your number using this pattern +375001234567")
     private String phoneNumber;
+    @Column(name = "password")
+    private String password;
+    @Column(name = "role")
+    private String role;
     @Column(name = "creation_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
