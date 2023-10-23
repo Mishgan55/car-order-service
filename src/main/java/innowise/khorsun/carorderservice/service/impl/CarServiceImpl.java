@@ -35,7 +35,7 @@ public class CarServiceImpl implements CarService {
     public CarDto getCarDtoById(Integer id) {
         return carRepository.findById(id)
                 .map(carMapper::carToCarDto)
-                .orElseThrow(() -> new CarNotFoundException("Not found",new Date()));
+                .orElseThrow(() -> new CarNotFoundException("Not found", new Date()));
     }
 
     public List<CarDto> getAllCars() {
@@ -45,10 +45,10 @@ public class CarServiceImpl implements CarService {
     @Transactional
     public void addCar(CarDto carDto) {
         if (!isCarPlateNumberUnique(carDto.getPlateNumber())) {
-            throw new DuplicateCarPlateNumberException("Car with this plate number already exists.",new Date());
+            throw new DuplicateCarPlateNumberException("Car with this plate number already exists.", new Date());
         }
-        if (placeRepository.findById(carDto.getPlaceId()).isEmpty()){
-            throw new PlaceNotFoundException("Place not found",new Date());
+        if (placeRepository.findById(carDto.getPlaceId()).isEmpty()) {
+            throw new PlaceNotFoundException("Place not found", new Date());
         }
         Car car = carMapper.carDtoToCar(carDto);
         carRepository.save(car);
@@ -68,8 +68,13 @@ public class CarServiceImpl implements CarService {
             updatedCar.setModel(carDto.getModel());
             updatedCar.setIsAvailable(carDto.getIsAvailable());
         } else {
-            throw new CarNotFoundException("Car not found",new Date());
+            throw new CarNotFoundException("Car not found", new Date());
         }
+    }
+
+    @Override
+    public List<CarDto> getAvailableCars() {
+        return carRepository.findCarsByIsAvailableTrue().stream().map(carMapper::carToCarDto).toList();
     }
 
     public boolean isCarPlateNumberUnique(String plateNumber) {

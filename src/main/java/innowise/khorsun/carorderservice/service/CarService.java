@@ -12,4 +12,5 @@ public interface CarService {
     void addCar(CarDto carDto);
     void removeCar(Integer id);
     void editCar(Integer id, CarUpdateDto carUpdateDto);
+    List<CarDto> getAvailableCars();
 }
