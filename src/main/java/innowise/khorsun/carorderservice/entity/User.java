@@ -59,4 +59,6 @@ public class User {
     private Date creationDate;
     @OneToMany(mappedBy = "user")
     private List<Booking> booking;
+    @OneToMany(mappedBy = "user")
+    private List<Payment> payments;
 }

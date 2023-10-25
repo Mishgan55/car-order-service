@@ -40,9 +40,7 @@ public class BookingServiceImpl implements BookingService {
     public void addBooking(BookingRequestModel bookingRequestModel) {
         Car car = carRepository.findById(bookingRequestModel.getCarId())
                 .orElseThrow(() -> new CarNotFoundException("Car not found", new Date()));
-
         car.setIsAvailable(false);
-
         Booking booking = bookingMapper.bookingRequestModelToBooking(bookingRequestModel);
         booking.setStartDateTime(LocalDateTime.now());
         booking.setStatus(Status.IN_PROGRESS);
@@ -61,7 +59,7 @@ public class BookingServiceImpl implements BookingService {
         Optional<Booking> optionalBooking = bookingRepository.findById(id);
         optionalBooking.ifPresent(reservation -> {
             reservation.setEndDateTime(LocalDateTime.now());
-            reservation.setStatus(Status.PAYED);
+            reservation.setStatus(Status.PENDING);
             Car car = reservation.getCar();
             if (car == null) {
                 throw new CarNotFoundException("Car not found for reservation ID: " + id, new Date());
