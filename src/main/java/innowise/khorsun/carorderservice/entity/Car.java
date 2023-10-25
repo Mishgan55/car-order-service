@@ -14,6 +14,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
@@ -45,6 +46,7 @@ public class Car {
     @Column(name = "is_available")
     private Boolean isAvailable;
     @Column(name = "daily_fee")
+    @NotNull
     private BigDecimal dailyFee;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id",referencedColumnName ="id" )

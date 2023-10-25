@@ -1,5 +1,6 @@
 package innowise.khorsun.carorderservice.entity;
 
+import innowise.khorsun.carorderservice.util.enums.Role;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -7,6 +8,8 @@ import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -25,7 +28,7 @@ import java.util.Date;
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class Customer {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -48,8 +51,9 @@ public class Customer {
     private String phoneNumber;
     @Column(name = "password")
     private String password;
+    @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private String role;
+    private Role role;
     @Column(name = "creation_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;

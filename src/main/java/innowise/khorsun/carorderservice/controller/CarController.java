@@ -51,7 +51,8 @@ public class CarController {
     }
 
     @PatchMapping("/{id}/edit")
-    public void editCar(@PathVariable("id") Integer id, @RequestBody @Valid CarUpdateDto carUpdateDto) {
+    public void editCar(@PathVariable("id") Integer id,
+                        @RequestBody @Valid CarUpdateDto carUpdateDto) {
         carService.editCar(id, carUpdateDto);
     }
 }
