@@ -13,4 +13,8 @@ public interface UserService {
     void addUser(UserDto userDto);
     void removeUser(Integer id);
     void editUser(Integer id, UserUpdateModel userUpdateModel);
+
+    boolean isUserEmailUnique(String s);
+
+    boolean isUserPhoneNumberUnique(String s);
 }

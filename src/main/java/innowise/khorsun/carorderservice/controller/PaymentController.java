@@ -30,8 +30,7 @@ public class PaymentController {
 
     @PostMapping
     public ResponseEntity<String> createStripeSession(@RequestBody PaymentRequestModel paymentRequestModel) {
-        PaymentDto paymentFromSession = stripeService.getPaymentFromSession(stripeService.createPaymentSession(
-                paymentRequestModel.getUserId(), paymentRequestModel.getType()), paymentRequestModel);
+        PaymentDto paymentFromSession = stripeService.getPaymentFromSession(paymentRequestModel);
         return ResponseEntity.ok(paymentFromSession.getUrl().toString());
     }
 

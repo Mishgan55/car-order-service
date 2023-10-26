@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -34,25 +33,23 @@ public class UserServiceImpl implements UserService {
         return userRepository
                 .findById(id)
                 .map(userMapper::userToUserDto)
-                .orElseThrow(() -> new UserNotFoundException("User not found", new Date()));
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id, new Date()));
     }
 
     @Override
     public List<UserDto> getAllUsers() {
         return userRepository
-                .findAll().stream()
-                .map(userMapper::userToUserDto).toList();
+                .findAll()
+                .stream()
+                .map(userMapper::userToUserDto)
+                .toList();
     }
 
     @Override
     @Transactional
     public void addUser(UserDto userDto) {
-        if (!isUserEmailUnique(userDto.getEmail())) {
-            throw new UserCustomerException("User with this email is already exist", new Date());
-        }
-        if (!isUserPhoneNumberUnique(userDto.getPhoneNumber())) {
-            throw new UserCustomerException("User with this phone number is already exist", new Date());
-        }
+        validateUserUniqueness(userDto);
+
         User user = userMapper.userDtoToUser(userDto);
         user.setCreationDate(new Date());
         userRepository.save(user);
@@ -62,19 +59,24 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void removeUser(Integer id) {
         userRepository.deleteById(id);
-
     }
 
     @Override
     @Transactional
     public void editUser(Integer id, UserUpdateModel userUpdateModel) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            User updatedUser = user.get();
-            updatedUser.setFirstName(userUpdateModel.getFirstName());
-            updatedUser.setLastName(userUpdateModel.getLastName());
-        } else {
-            throw new UserNotFoundException("User not found", new Date());
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id, new Date()));
+
+        user.setFirstName(userUpdateModel.getFirstName());
+        user.setLastName(userUpdateModel.getLastName());
+    }
+
+    private void validateUserUniqueness(UserDto userDto) {
+        if (!isUserEmailUnique(userDto.getEmail())) {
+            throw new UserCustomerException("User with this email already exists: " + userDto.getEmail(), new Date());
+        }
+        if (!isUserPhoneNumberUnique(userDto.getPhoneNumber())) {
+            throw new UserCustomerException("User with this phone number already exists: " + userDto.getPhoneNumber(), new Date());
         }
     }
 

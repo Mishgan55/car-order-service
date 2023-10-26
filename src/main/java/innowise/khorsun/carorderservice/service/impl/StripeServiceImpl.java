@@ -41,7 +41,7 @@ public class StripeServiceImpl implements StripeService {
 
     @Override
     public SessionCreateParams createPaymentSession(Integer userId, Type type) {
-        Stripe.apiKey =stripeApiKey;
+        Stripe.apiKey = stripeApiKey;
         SessionCreateParams.Builder builder = new SessionCreateParams.Builder();
         builder.addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD);
         builder.setMode(SessionCreateParams.Mode.PAYMENT);
@@ -72,7 +72,9 @@ public class StripeServiceImpl implements StripeService {
     }
 
     @Override
-    public PaymentDto getPaymentFromSession(SessionCreateParams params, PaymentRequestModel paymentRequestInfoDto) {
+    public PaymentDto getPaymentFromSession(PaymentRequestModel paymentRequestInfoDto) {
+        SessionCreateParams params = createPaymentSession(
+                paymentRequestInfoDto.getUserId(), paymentRequestInfoDto.getType());
         try {
             Session session = Session.create(params);
             String sessionUrl = session.getUrl();
@@ -82,7 +84,6 @@ public class StripeServiceImpl implements StripeService {
             if (sessionUrl == null || sessionId == null) {
                 throw new PaymentSessionException("Invalid session data received from Stripe");
             }
-
             BigDecimal amountToPay = new BigDecimal(session.getAmountTotal());
             PaymentDto paymentDto = new PaymentDto();
             paymentDto.setUserId(userId);

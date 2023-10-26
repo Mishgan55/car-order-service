@@ -10,6 +10,5 @@ import org.springframework.stereotype.Service;
 public interface StripeService {
     SessionCreateParams createPaymentSession(Integer userId, Type type);
 
-    PaymentDto getPaymentFromSession(SessionCreateParams params,
-                                     PaymentRequestModel paymentRequestInfoDto);
+    PaymentDto getPaymentFromSession(PaymentRequestModel paymentRequestInfoDto);
 }
