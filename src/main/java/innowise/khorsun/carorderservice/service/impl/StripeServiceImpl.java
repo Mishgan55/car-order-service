@@ -92,7 +92,7 @@ public class StripeServiceImpl implements StripeService {
             paymentDto.setType(paymentRequestInfoDto.getType());
             paymentDto.setStatus(Status.PENDING);
             paymentDto.setPaymentAmount(amountToPay.divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP));
-            return paymentMapper.paymentToPaymentDto(paymentService.save(paymentMapper.paymentDtoToPayment(paymentDto)));
+            return paymentMapper.paymentToPaymentDto(paymentService.addPayment(paymentDto));
         } catch (StripeException e) {
             throw new PaymentSessionException("Stripe error: " + e.getMessage());
         } catch (MalformedURLException e) {

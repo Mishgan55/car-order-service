@@ -9,8 +9,9 @@ import innowise.khorsun.carorderservice.repositorie.CarRepository;
 import innowise.khorsun.carorderservice.repositorie.BookingRepository;
 import innowise.khorsun.carorderservice.service.BookingService;
 import innowise.khorsun.carorderservice.util.enums.Status;
+import innowise.khorsun.carorderservice.util.error.booking.BookingExistingException;
 import innowise.khorsun.carorderservice.util.error.car.CarNotFoundException;
-import innowise.khorsun.carorderservice.util.error.reservation.BookingNotFoundException;
+import innowise.khorsun.carorderservice.util.error.booking.BookingNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +39,9 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public void addBooking(BookingRequestModel bookingRequestModel) {
-        Car car = carRepository.findById(bookingRequestModel.getCarId())
+        checkIfActiveBookingExists(bookingRequestModel.getUserId());
+        Car car = carRepository
+                .findById(bookingRequestModel.getCarId())
                 .orElseThrow(() -> new CarNotFoundException("Car not found", new Date()));
         car.setIsAvailable(false);
         Booking booking = bookingMapper.bookingRequestModelToBooking(bookingRequestModel);
@@ -66,5 +69,20 @@ public class BookingServiceImpl implements BookingService {
             }
             car.setIsAvailable(true);
         });
+    }
+
+    @Override
+    public Booking getBookingByUserIdAndStatus(Integer userId, Status status) {
+        return bookingRepository
+                .findBookingByUserIdAndStatus(userId, Status.PENDING)
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found", new Date()));
+    }
+
+    private void checkIfActiveBookingExists(Integer userId) {
+        if (bookingRepository.findBookingByUserIdAndStatus(userId, Status.PENDING).isPresent()
+                || bookingRepository.findBookingByUserIdAndStatus(userId, Status.IN_PROGRESS).isPresent()) {
+            throw new BookingExistingException("This order already exists, please finish your previous order first ",
+                    new Date());
+        }
     }
 }

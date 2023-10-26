@@ -1,55 +1,52 @@
 package innowise.khorsun.carorderservice.service.impl;
 
+import innowise.khorsun.carorderservice.dto.CarDto;
+import innowise.khorsun.carorderservice.dto.PaymentDto;
 import innowise.khorsun.carorderservice.entity.Booking;
-import innowise.khorsun.carorderservice.entity.Car;
 import innowise.khorsun.carorderservice.entity.Payment;
-import innowise.khorsun.carorderservice.repositorie.BookingRepository;
-import innowise.khorsun.carorderservice.repositorie.CarRepository;
+import innowise.khorsun.carorderservice.mapper.PaymentMapper;
 import innowise.khorsun.carorderservice.repositorie.PaymentRepository;
+import innowise.khorsun.carorderservice.service.BookingService;
+import innowise.khorsun.carorderservice.service.CarService;
 import innowise.khorsun.carorderservice.service.PaymentService;
 import innowise.khorsun.carorderservice.util.enums.Status;
-import innowise.khorsun.carorderservice.util.error.car.CarNotFoundException;
-import innowise.khorsun.carorderservice.util.error.reservation.BookingNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.util.Date;
 
 @Service
 @Transactional(readOnly = true)
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final BookingRepository bookingRepository;
-
-
-    private final CarRepository carRepository;
+    private final BookingService bookingService;
+    private final PaymentMapper paymentMapper;
+    private final CarService carService;
 
     @Autowired
-    public PaymentServiceImpl(PaymentRepository paymentRepository, BookingRepository bookingRepository, CarRepository carRepository) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository,
+                              BookingService bookingService, PaymentMapper paymentMapper, CarService carService) {
         this.paymentRepository = paymentRepository;
-        this.bookingRepository = bookingRepository;
-        this.carRepository = carRepository;
+        this.bookingService = bookingService;
+        this.paymentMapper = paymentMapper;
+        this.carService = carService;
     }
 
     @Override
     @Transactional
-    public Payment save(Payment payment) {
-        return paymentRepository.save(payment);
+    public Payment addPayment(PaymentDto paymentDto) {
+        return paymentRepository.save(paymentMapper.paymentDtoToPayment(paymentDto));
     }
 
     @Override
     public BigDecimal calculatePaymentAmount(Integer userId) {
-        Booking booking = bookingRepository
-                .findBookingByUserIdAndStatus(userId, Status.PENDING)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found", new Date()));
-        Car car = carRepository.findById(booking.getCar().getId())
-                .orElseThrow(() -> new CarNotFoundException("Car not found", new Date()));
+        Booking booking = bookingService.getBookingByUserIdAndStatus(userId, Status.PENDING);
+        CarDto carDto = carService.getCarDtoById(booking.getCar().getId());
         long minutes = Duration.between(booking.getStartDateTime(), booking.getEndDateTime()).toMinutes();
-        BigDecimal dailyFee = car.getDailyFee();
+        BigDecimal dailyFee = carDto.getDailyFee();
         return dailyFee.multiply(BigDecimal.valueOf(minutes)).multiply(BigDecimal.valueOf(100));
     }
 
@@ -73,8 +70,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (isSessionPaid(sessionId)) {
             return "invalid payment";
         }
-        Booking booking = bookingRepository.findBookingByUserIdAndStatus(payment.getUser().getId(), Status.PENDING)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found", new Date()));
+        Booking booking = bookingService.getBookingByUserIdAndStatus(payment.getUser().getId(), Status.PENDING);
         booking.setStatus(Status.PAYED);
         payment.setStatus(Status.PAYED);
         paymentRepository.save(payment);
