@@ -9,6 +9,7 @@ import innowise.khorsun.carorderservice.repositorie.PaymentRepository;
 import innowise.khorsun.carorderservice.service.BookingService;
 import innowise.khorsun.carorderservice.service.CarService;
 import innowise.khorsun.carorderservice.service.PaymentService;
+import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.enums.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ResourceBundle;
 
 @Service
 @Transactional(readOnly = true)
@@ -27,19 +27,14 @@ public class PaymentServiceImpl implements PaymentService {
     private final BookingService bookingService;
     private final PaymentMapper paymentMapper;
     private final CarService carService;
-    private final ResourceBundle resourceBundle;
-    private static final String PAYMENT_NOT_FOUND="message.error.payment_not_found";
-    private static final String INVALID_KEY_MESSAGE="payment_invalid_key";
-    private static final String SUCCESSFULLY_PAYMENT_MESSAGE="successfully_payment";
     @Autowired
     public PaymentServiceImpl(PaymentRepository paymentRepository,
-                              BookingService bookingService, PaymentMapper paymentMapper, CarService carService,
-                              ResourceBundle bundle) {
+                              BookingService bookingService, PaymentMapper paymentMapper, CarService carService) {
         this.paymentRepository = paymentRepository;
         this.bookingService = bookingService;
         this.paymentMapper = paymentMapper;
         this.carService = carService;
-        this.resourceBundle = bundle;
+
     }
 
     @Override
@@ -72,16 +67,16 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public String checkSuccess(Payment payment, String sessionId) {
         if (payment == null) {
-            return resourceBundle.getString(PAYMENT_NOT_FOUND);
+            return PropertyUtil.PAYMENT_NOT_FOUND;
         }
         if (isSessionPaid(sessionId)) {
-            return resourceBundle.getString(INVALID_KEY_MESSAGE);
+            return PropertyUtil.INVALID_KEY_MESSAGE;
         }
         Booking booking = bookingService.getBookingByUserIdAndStatus(payment.getUser().getId(), Status.PENDING);
         booking.setStatus(Status.PAYED);
         payment.setPaymentDate(LocalDateTime.now());
         payment.setStatus(Status.PAYED);
         paymentRepository.save(payment);
-        return resourceBundle.getString(SUCCESSFULLY_PAYMENT_MESSAGE);
+        return PropertyUtil.SUCCESSFULLY_PAYMENT_MESSAGE;
     }
 }

@@ -7,6 +7,7 @@ import innowise.khorsun.carorderservice.model.BookingRequestModel;
 import innowise.khorsun.carorderservice.repositorie.BookingRepository;
 import innowise.khorsun.carorderservice.service.BookingService;
 import innowise.khorsun.carorderservice.service.CarService;
+import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.enums.Status;
 import innowise.khorsun.carorderservice.util.error.booking.BookingExistingException;
 import innowise.khorsun.carorderservice.util.error.booking.BookingNotFoundException;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
-import java.util.ResourceBundle;
 
 @Service
 @Transactional(readOnly = true)
@@ -26,18 +26,13 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final BookingMapper bookingMapper;
     private final CarService carService;
-    private final ResourceBundle resourceBundle;
-    private static final String BOOKING_NOT_FOUND="message.error.booking_not_found";
-    private static final String MESSAGE_ERROR_BOOKING_EXISTING ="message.error.booking_existing";
-    private static final String RETURN_BOOKING_ERROR_MESSAGE = "You have already return the car";
 
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository, BookingMapper bookingMapper,
-                              CarService carService, ResourceBundle bundle) {
+                              CarService carService) {
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
         this.carService = carService;
-        this.resourceBundle = bundle;
     }
 
     @Override
@@ -57,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository
                 .findById(id)
                 .map(bookingMapper::bookingToBookingDto)
-                .orElseThrow(() -> new BookingNotFoundException(resourceBundle.getString(BOOKING_NOT_FOUND),
+                .orElseThrow(() -> new BookingNotFoundException(PropertyUtil.BOOKING_NOT_FOUND,
                         new Date()));
     }
 
@@ -65,7 +60,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public void returnBooking(Integer id) {
         if(bookingRepository.findBookingByIdAndStatus(id,Status.PENDING).isPresent()){
-            throw new BookingExistingException(RETURN_BOOKING_ERROR_MESSAGE ,new Date());
+            throw new BookingExistingException(PropertyUtil.RETURN_BOOKING_ERROR_MESSAGE ,new Date());
         }
         Optional<Booking> optionalBooking = bookingRepository.findById(id);
         optionalBooking.ifPresent(reservation -> {
@@ -79,14 +74,14 @@ public class BookingServiceImpl implements BookingService {
     public Booking getBookingByUserIdAndStatus(Integer userId, Status status) {
         return bookingRepository
                 .findBookingByUserIdAndStatus(userId, Status.PENDING)
-                .orElseThrow(() -> new BookingNotFoundException(resourceBundle.getString(BOOKING_NOT_FOUND),
+                .orElseThrow(() -> new BookingNotFoundException(PropertyUtil.BOOKING_NOT_FOUND,
                         new Date()));
     }
 
     private void checkIfActiveBookingExists(Integer userId) {
         if (bookingRepository.findBookingByUserIdAndStatus(userId, Status.PENDING).isPresent()
                 || bookingRepository.findBookingByUserIdAndStatus(userId, Status.IN_PROGRESS).isPresent()) {
-            throw new BookingExistingException(resourceBundle.getString(MESSAGE_ERROR_BOOKING_EXISTING),
+            throw new BookingExistingException(PropertyUtil.MESSAGE_ERROR_BOOKING_EXISTING,
                     new Date());
         }
     }

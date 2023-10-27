@@ -9,6 +9,7 @@ import innowise.khorsun.carorderservice.mapper.PaymentMapper;
 import innowise.khorsun.carorderservice.model.PaymentRequestModel;
 import innowise.khorsun.carorderservice.service.PaymentService;
 import innowise.khorsun.carorderservice.service.StripeService;
+import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.enums.Status;
 import innowise.khorsun.carorderservice.util.enums.Type;
 import innowise.khorsun.carorderservice.util.error.payment.PaymentSessionException;
@@ -20,27 +21,21 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ResourceBundle;
+
 
 @Service
 public class StripeServiceImpl implements StripeService {
 
-    private static final String PAYMENT_URL = "http://localhost:8082/e-car-order/payments";
-    private static final String INVALID_SESSION_MESSAGE = "Invalid session data received from Stripe";
-    private static final String STRIPE_ERROR_MESSAGE = "Stripe error: ";
-    private static final String MALFORMED_URL_MESSAGE = "Malformed URL: ";
     private final PaymentService paymentService;
     private final PaymentMapper paymentMapper;
-    private final ResourceBundle resourceBundle;
 
     @Value("${STRIPE_API_KEY}")
     private String stripeApiKey;
 
     @Autowired
-    public StripeServiceImpl(PaymentService paymentService, PaymentMapper paymentMapper, ResourceBundle resourceBundle) {
+    public StripeServiceImpl(PaymentService paymentService, PaymentMapper paymentMapper) {
         this.paymentService = paymentService;
         this.paymentMapper = paymentMapper;
-        this.resourceBundle = resourceBundle;
     }
 
     @Override
@@ -49,8 +44,8 @@ public class StripeServiceImpl implements StripeService {
         SessionCreateParams.Builder builder = new SessionCreateParams.Builder();
         builder.addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD);
         builder.setMode(SessionCreateParams.Mode.PAYMENT);
-        builder.setSuccessUrl(PAYMENT_URL + "/success" + "?session_id={CHECKOUT_SESSION_ID}");
-        builder.setCancelUrl(PAYMENT_URL + "/cancel");
+        builder.setSuccessUrl(PropertyUtil.PAYMENT_URL + "/success" + "?session_id={CHECKOUT_SESSION_ID}");
+        builder.setCancelUrl(PropertyUtil.PAYMENT_URL + "/cancel");
         builder.setClientReferenceId(userId.toString());
         builder.addLineItem(
                 new SessionCreateParams.LineItem.Builder()
@@ -86,7 +81,7 @@ public class StripeServiceImpl implements StripeService {
             Integer userId = Integer.valueOf(session.getClientReferenceId());
 
             if (sessionUrl == null || sessionId == null) {
-                throw new PaymentSessionException(resourceBundle.getString(INVALID_SESSION_MESSAGE));
+                throw new PaymentSessionException(PropertyUtil.INVALID_SESSION_MESSAGE);
             }
             BigDecimal amountToPay = new BigDecimal(session.getAmountTotal());
             PaymentDto paymentDto = new PaymentDto();
@@ -98,9 +93,9 @@ public class StripeServiceImpl implements StripeService {
             paymentDto.setPaymentAmount(amountToPay.divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP));
             return paymentMapper.paymentToPaymentDto(paymentService.addPayment(paymentDto));
         } catch (StripeException e) {
-            throw new PaymentSessionException(resourceBundle.getString(STRIPE_ERROR_MESSAGE) + e.getMessage());
+            throw new PaymentSessionException(PropertyUtil.STRIPE_ERROR_MESSAGE + e.getMessage());
         } catch (MalformedURLException e) {
-            throw new PaymentSessionException(resourceBundle.getString(MALFORMED_URL_MESSAGE) + e.getMessage());
+            throw new PaymentSessionException(PropertyUtil.MALFORMED_URL_MESSAGE + e.getMessage());
         }
     }
 }
