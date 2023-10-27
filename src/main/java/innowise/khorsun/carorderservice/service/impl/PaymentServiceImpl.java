@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ResourceBundle;
 
 @Service
 @Transactional(readOnly = true)
@@ -25,14 +27,19 @@ public class PaymentServiceImpl implements PaymentService {
     private final BookingService bookingService;
     private final PaymentMapper paymentMapper;
     private final CarService carService;
-
+    private final ResourceBundle resourceBundle;
+    private static final String PAYMENT_NOT_FOUND="message.error.payment_not_found";
+    private static final String INVALID_KEY_MESSAGE="payment_invalid_key";
+    private static final String SUCCESSFULLY_PAYMENT_MESSAGE="successfully_payment";
     @Autowired
     public PaymentServiceImpl(PaymentRepository paymentRepository,
-                              BookingService bookingService, PaymentMapper paymentMapper, CarService carService) {
+                              BookingService bookingService, PaymentMapper paymentMapper, CarService carService,
+                              ResourceBundle bundle) {
         this.paymentRepository = paymentRepository;
         this.bookingService = bookingService;
         this.paymentMapper = paymentMapper;
         this.carService = carService;
+        this.resourceBundle = bundle;
     }
 
     @Override
@@ -65,15 +72,16 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public String checkSuccess(Payment payment, String sessionId) {
         if (payment == null) {
-            return "payment not found";
+            return resourceBundle.getString(PAYMENT_NOT_FOUND);
         }
         if (isSessionPaid(sessionId)) {
-            return "invalid payment";
+            return resourceBundle.getString(INVALID_KEY_MESSAGE);
         }
         Booking booking = bookingService.getBookingByUserIdAndStatus(payment.getUser().getId(), Status.PENDING);
         booking.setStatus(Status.PAYED);
+        payment.setPaymentDate(LocalDateTime.now());
         payment.setStatus(Status.PAYED);
         paymentRepository.save(payment);
-        return "Your payment was successful!";
+        return resourceBundle.getString(SUCCESSFULLY_PAYMENT_MESSAGE);
     }
 }

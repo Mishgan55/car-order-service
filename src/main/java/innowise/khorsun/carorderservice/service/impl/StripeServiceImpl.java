@@ -20,23 +20,27 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ResourceBundle;
 
 @Service
 public class StripeServiceImpl implements StripeService {
 
     private static final String PAYMENT_URL = "http://localhost:8082/e-car-order/payments";
-
+    private static final String INVALID_SESSION_MESSAGE = "Invalid session data received from Stripe";
+    private static final String STRIPE_ERROR_MESSAGE = "Stripe error: ";
+    private static final String MALFORMED_URL_MESSAGE = "Malformed URL: ";
     private final PaymentService paymentService;
-
     private final PaymentMapper paymentMapper;
+    private final ResourceBundle resourceBundle;
 
     @Value("${STRIPE_API_KEY}")
     private String stripeApiKey;
 
     @Autowired
-    public StripeServiceImpl(PaymentService paymentService, PaymentMapper paymentMapper) {
+    public StripeServiceImpl(PaymentService paymentService, PaymentMapper paymentMapper, ResourceBundle resourceBundle) {
         this.paymentService = paymentService;
         this.paymentMapper = paymentMapper;
+        this.resourceBundle = resourceBundle;
     }
 
     @Override
@@ -82,7 +86,7 @@ public class StripeServiceImpl implements StripeService {
             Integer userId = Integer.valueOf(session.getClientReferenceId());
 
             if (sessionUrl == null || sessionId == null) {
-                throw new PaymentSessionException("Invalid session data received from Stripe");
+                throw new PaymentSessionException(resourceBundle.getString(INVALID_SESSION_MESSAGE));
             }
             BigDecimal amountToPay = new BigDecimal(session.getAmountTotal());
             PaymentDto paymentDto = new PaymentDto();
@@ -94,9 +98,9 @@ public class StripeServiceImpl implements StripeService {
             paymentDto.setPaymentAmount(amountToPay.divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP));
             return paymentMapper.paymentToPaymentDto(paymentService.addPayment(paymentDto));
         } catch (StripeException e) {
-            throw new PaymentSessionException("Stripe error: " + e.getMessage());
+            throw new PaymentSessionException(resourceBundle.getString(STRIPE_ERROR_MESSAGE) + e.getMessage());
         } catch (MalformedURLException e) {
-            throw new PaymentSessionException("Malformed URL: " + e.getMessage());
+            throw new PaymentSessionException(resourceBundle.getString(MALFORMED_URL_MESSAGE) + e.getMessage());
         }
     }
 }

@@ -7,13 +7,14 @@ import innowise.khorsun.carorderservice.model.UserUpdateModel;
 import innowise.khorsun.carorderservice.repositorie.UserRepository;
 import innowise.khorsun.carorderservice.service.UserService;
 import innowise.khorsun.carorderservice.util.error.user.UserNotFoundException;
-import innowise.khorsun.carorderservice.util.error.user.UserCustomerException;
+import innowise.khorsun.carorderservice.util.error.user.UserDuplicateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 
 @Service
 @Transactional(readOnly = true)
@@ -21,11 +22,16 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final ResourceBundle resourceBundle;
+    private static final String USER_NOT_FOUND="message.error.user_not_found";
+    private static final String DUPLICATE_EMAIL_MESSAGE="message.error.duplicate_email";
+    private static final String DUPLICATE_PHONE_MESSAGE="message.error.duplicate_phone";
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, ResourceBundle resourceBundle) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.resourceBundle = resourceBundle;
     }
 
     @Override
@@ -33,7 +39,7 @@ public class UserServiceImpl implements UserService {
         return userRepository
                 .findById(id)
                 .map(userMapper::userToUserDto)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id, new Date()));
+                .orElseThrow(() -> new UserNotFoundException(resourceBundle.getString(USER_NOT_FOUND) + id, new Date()));
     }
 
     @Override
@@ -64,26 +70,28 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void editUser(Integer id, UserUpdateModel userUpdateModel) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id, new Date()));
+                .orElseThrow(() -> new UserNotFoundException(resourceBundle.getString(USER_NOT_FOUND) + id, new Date()));
 
         user.setFirstName(userUpdateModel.getFirstName());
         user.setLastName(userUpdateModel.getLastName());
     }
 
     private void validateUserUniqueness(UserDto userDto) {
-        if (!isUserEmailUnique(userDto.getEmail())) {
-            throw new UserCustomerException("User with this email already exists: " + userDto.getEmail(), new Date());
-        }
-        if (!isUserPhoneNumberUnique(userDto.getPhoneNumber())) {
-            throw new UserCustomerException("User with this phone number already exists: " + userDto.getPhoneNumber(), new Date());
+        isUserEmailUnique(userDto);
+        isUserPhoneNumberUnique(userDto);
+    }
+
+    private void isUserEmailUnique(UserDto userDto) {
+        if (userRepository.findUserByEmail(userDto.getEmail()).isPresent()){
+            throw new UserDuplicateException(resourceBundle.getString(DUPLICATE_EMAIL_MESSAGE) + userDto.getEmail(),
+                    new Date());
         }
     }
 
-    public boolean isUserEmailUnique(String email) {
-        return userRepository.findUserByEmail(email).isEmpty();
-    }
-
-    public boolean isUserPhoneNumberUnique(String phoneNumber) {
-        return userRepository.findUserByPhoneNumber(phoneNumber).isEmpty();
+    private void isUserPhoneNumberUnique(UserDto userDto) {
+        if (userRepository.findUserByPhoneNumber(userDto.getPhoneNumber()).isPresent()){
+            throw new UserDuplicateException(resourceBundle.getString(DUPLICATE_PHONE_MESSAGE) + userDto.getPhoneNumber(),
+                    new Date());
+        }
     }
 }
