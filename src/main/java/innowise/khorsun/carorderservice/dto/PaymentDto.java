@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.time.LocalDateTime;
 
 @Data
 public class PaymentDto {
@@ -16,4 +17,5 @@ public class PaymentDto {
     private URL url;
     private BigDecimal paymentAmount;
     private Type type;
+    private LocalDateTime paymentDate;
 }

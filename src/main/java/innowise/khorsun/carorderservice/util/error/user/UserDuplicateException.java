@@ -11,7 +11,7 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString
-public class UserCustomerException extends RuntimeException{
+public class UserDuplicateException extends RuntimeException{
     private final String message;
     private final Date date;
 }

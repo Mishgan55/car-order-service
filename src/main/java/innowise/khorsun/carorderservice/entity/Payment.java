@@ -18,6 +18,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @RequiredArgsConstructor
@@ -43,4 +45,6 @@ public class Payment {
     @Column(name = "type")
     @Enumerated(value = EnumType.STRING)
     private Type type;
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
 }
