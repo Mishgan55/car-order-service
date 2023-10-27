@@ -49,7 +49,6 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void addUser(UserDto userDto) {
         validateUserUniqueness(userDto);
-
         User user = userMapper.userDtoToUser(userDto);
         user.setCreationDate(new Date());
         userRepository.save(user);
