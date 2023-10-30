@@ -6,7 +6,7 @@ import innowise.khorsun.carorderservice.mapper.UserMapper;
 import innowise.khorsun.carorderservice.model.UserUpdateModel;
 import innowise.khorsun.carorderservice.repositorie.UserRepository;
 import innowise.khorsun.carorderservice.service.impl.UserServiceImpl;
-import innowise.khorsun.carorderservice.util.error.user.UserCustomerException;
+import innowise.khorsun.carorderservice.util.error.user.UserDuplicateException;
 import innowise.khorsun.carorderservice.util.error.user.UserNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,13 +15,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -99,62 +101,54 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).save(any(User.class));
     }
     @Test
-    void testIsUserEmailUnique_UniqueEmail() {
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.empty());
-
-        boolean isUnique = userService.isUserEmailUnique("test@example.com");
-
-        Assertions.assertTrue(isUnique);
-    }
-
-    @Test
-    void testIsUserEmailUnique_DuplicateEmail() {
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(new User()));
-
-        boolean isUnique = userService.isUserEmailUnique("test@example.com");
-
-        Assertions.assertFalse(isUnique);
-    }
-
-    @Test
-    void testIsUserPhoneNumberUnique_UniquePhoneNumber() {
-        when(userRepository.findUserByPhoneNumber(anyString())).thenReturn(Optional.empty());
-
-        boolean isUnique = userService.isUserPhoneNumberUnique("1234567890");
-
-        Assertions.assertTrue(isUnique);
-    }
-
-    @Test
-    void testIsUserPhoneNumberUnique_DuplicatePhoneNumber() {
-        when(userRepository.findUserByPhoneNumber(anyString())).thenReturn(Optional.of(new User()));
-
-        boolean isUnique = userService.isUserPhoneNumberUnique("1234567890");
-
-        Assertions.assertFalse(isUnique);
-    }
-
-
-    @Test
-    void testAddUser_DuplicatePhoneNumber() {
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.empty());
-        when(userRepository.findUserByPhoneNumber(anyString())).thenReturn(Optional.of(new User()));
-
+    void testIsUserEmailUnique() throws Exception {
         UserDto userDto = new UserDto();
         userDto.setEmail("test@example.com");
-        userDto.setPhoneNumber("1234567890");
 
-        assertThrows(UserCustomerException.class, () -> userService.addUser(userDto));
+        UserService userServiceSpy = spy(userService);
+
+        doReturn(Optional.empty()).when(userRepository).findUserByEmail(userDto.getEmail());
+
+        // Вызов приватного метода
+        Method method = UserServiceImpl.class.getDeclaredMethod("isUserEmailUnique", UserDto.class);
+        method.setAccessible(true);
+        method.invoke(userServiceSpy, userDto);
+
+        verify(userRepository).findUserByEmail(userDto.getEmail());
     }
     @Test
-    void testAddUser_DuplicateEmail() {
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(new User()));
-
+    void testIsUserEmailUnique_DuplicateEmail()  {
         UserDto userDto = new UserDto();
         userDto.setEmail("test@example.com");
+
+        when(userRepository.findUserByEmail(any())).thenReturn(Optional.of(new User()));
+
+        assertThrows(UserDuplicateException.class,()->userService.addUser(userDto));
+    }
+
+    @Test
+    void testIsUserPhoneNumberUnique() throws Exception {
+        UserDto userDto = new UserDto();
         userDto.setPhoneNumber("1234567890");
 
-        assertThrows(UserCustomerException.class, () -> userService.addUser(userDto));
+        UserService userServiceSpy = spy(userService);
+
+        doReturn(Optional.empty()).when(userRepository).findUserByPhoneNumber(userDto.getPhoneNumber());
+
+        Method method = UserServiceImpl.class.getDeclaredMethod("isUserPhoneNumberUnique", UserDto.class);
+        method.setAccessible(true);
+        method.invoke(userServiceSpy, userDto);
+
+        verify(userRepository).findUserByPhoneNumber(userDto.getPhoneNumber());
+    }
+    @Test
+    void testIsUserPhoneNumberUnique_DuplicateEmail()  {
+        UserDto userDto = new UserDto();
+        userDto.setEmail("1231234324");
+
+        when(userRepository.findUserByPhoneNumber(any())).thenReturn(Optional.of(new User()));
+
+        assertThrows(UserDuplicateException.class,()->userService.addUser(userDto));
     }
     @Test
     void testRemoveUser() {

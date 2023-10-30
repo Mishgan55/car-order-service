@@ -56,7 +56,8 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     public Optional<Place> getPlaceById(Integer placeId){
-        return placeRepository.findById(placeId);
+        return placeRepository
+                .findById(placeId);
     }
 
     @Override

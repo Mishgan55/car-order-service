@@ -115,4 +115,29 @@ class PlaceServiceImplTest {
 
         assertThrows(PlaceNotFoundException.class,()->placeService.editPlace(1,updatedPlace));
     }
+
+    @Test
+    void testGetPlaceById(){
+        Integer placeId=1;
+        Place expectedPlace = new Place();
+        expectedPlace.setId(1);
+        expectedPlace.setName("Test");
+        when(placeRepository.findById(1)).thenReturn(Optional.of(expectedPlace));
+
+        Optional<Place> result = placeService.getPlaceById(placeId);
+
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertEquals(expectedPlace, result.get());
+    }
+    @Test
+    void testGetPlaceById_WhenPlaceDoesNotExist() {
+        Integer placeId = 1;
+
+        when(placeRepository.findById(placeId)).thenReturn(Optional.empty());
+
+        Optional<Place> result = placeService.getPlaceById(placeId);
+
+        Assertions.assertFalse(result.isPresent());
+    }
+
 }

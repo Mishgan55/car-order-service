@@ -42,7 +42,11 @@ public class CarServiceImpl implements CarService {
     }
 
     public List<CarDto> getAllCars() {
-        return carRepository.findAll().stream().map(carMapper::carToCarDto).toList();
+        return carRepository
+                .findAll()
+                .stream()
+                .map(carMapper::carToCarDto)
+                .toList();
     }
 
     @Transactional
@@ -77,7 +81,10 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public List<CarDto> getAvailableCars() {
-        return carRepository.findCarsByIsAvailableTrue().stream().map(carMapper::carToCarDto).toList();
+        return carRepository.findCarsByIsAvailableTrue()
+                .orElseThrow(()->new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()))
+                .stream()
+                .map(carMapper::carToCarDto).toList();
     }
 
     public boolean isCarPlateNumberUnique(String plateNumber) {
@@ -90,6 +97,7 @@ public class CarServiceImpl implements CarService {
                 .findById(bookingRequestModel.getCarId())
                 .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()));
         car.setIsAvailable(status);
+        carRepository.save(car);
     }
     @Override
     @Transactional
