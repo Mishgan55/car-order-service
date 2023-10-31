@@ -1,7 +1,6 @@
 package innowise.khorsun.carorderservice.service.impl;
 
 import innowise.khorsun.carorderservice.dto.PlaceDto;
-import innowise.khorsun.carorderservice.entity.Place;
 import innowise.khorsun.carorderservice.mapper.PlaceMapper;
 import innowise.khorsun.carorderservice.repositorie.PlaceRepository;
 import innowise.khorsun.carorderservice.service.PlaceService;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -53,10 +51,6 @@ public class PlaceServiceImpl implements PlaceService {
     @Transactional
     public void removePlace(Integer id) {
         placeRepository.deleteById(id);
-    }
-
-    public Optional<Place> getPlaceById(Integer placeId){
-        return placeRepository.findById(placeId);
     }
 
     @Override

@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserDtoById(Integer id) {
+    public UserDto getUserById(Integer id) {
         return userRepository
                 .findById(id)
                 .map(userMapper::userToUserDto)

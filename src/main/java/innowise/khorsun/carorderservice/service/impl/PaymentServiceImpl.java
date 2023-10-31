@@ -46,7 +46,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public BigDecimal calculatePaymentAmount(Integer userId) {
         Booking booking = bookingService.getBookingByUserIdAndStatus(userId, Status.PENDING);
-        CarDto carDto = carService.getCarDtoById(booking.getCar().getId());
+        CarDto carDto = carService.getCarById(booking.getCar().getId());
         long minutes = Duration.between(booking.getStartDateTime(), booking.getEndDateTime()).toMinutes();
         BigDecimal dailyFee = carDto.getDailyFee();
         return dailyFee.multiply(BigDecimal.valueOf(minutes)).multiply(BigDecimal.valueOf(100));

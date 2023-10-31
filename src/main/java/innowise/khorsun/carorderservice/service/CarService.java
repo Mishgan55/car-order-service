@@ -8,7 +8,7 @@ import java.util.List;
 
 @Service
 public interface CarService {
-    CarDto getCarDtoById(Integer id);
+    CarDto getCarById(Integer id);
     List<CarDto> getAllCars();
     void addCar(CarDto carDto);
     void removeCar(Integer id);

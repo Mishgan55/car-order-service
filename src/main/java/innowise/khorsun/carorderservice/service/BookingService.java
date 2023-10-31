@@ -6,6 +6,8 @@ import innowise.khorsun.carorderservice.model.BookingRequestModel;
 import innowise.khorsun.carorderservice.util.enums.Status;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public interface BookingService {
     void addBooking(BookingRequestModel bookingRequestModel);
@@ -15,4 +17,6 @@ public interface BookingService {
     void returnBooking(Integer id);
 
     Booking getBookingByUserIdAndStatus(Integer userId, Status status);
+
+    List<BookingDto> getBookingsByUserId(Integer userId);
 }
