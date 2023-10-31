@@ -1,27 +1,23 @@
 package innowise.khorsun.carorderservice.service;
 
 import innowise.khorsun.carorderservice.dto.CarDto;
+import innowise.khorsun.carorderservice.dto.PlaceDto;
 import innowise.khorsun.carorderservice.entity.Car;
-import innowise.khorsun.carorderservice.entity.Place;
 import innowise.khorsun.carorderservice.mapper.CarMapper;
 import innowise.khorsun.carorderservice.model.BookingRequestModel;
 import innowise.khorsun.carorderservice.model.CarUpdateDto;
 import innowise.khorsun.carorderservice.repositorie.CarRepository;
 import innowise.khorsun.carorderservice.service.impl.CarServiceImpl;
-import innowise.khorsun.carorderservice.service.impl.PlaceServiceImpl;
 import innowise.khorsun.carorderservice.util.error.car.CarNotFoundException;
 import innowise.khorsun.carorderservice.util.error.car.DuplicateCarPlateNumberException;
-import innowise.khorsun.carorderservice.util.error.place.PlaceNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +35,7 @@ class CarServiceImplTest {
     @InjectMocks
     private CarServiceImpl carService;
     @Mock
-    private PlaceServiceImpl placeService;
+    private PlaceService placeService;
     @Mock
     private CarRepository carRepository;
     @Mock
@@ -47,47 +43,42 @@ class CarServiceImplTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this); // Инициализация моков
-
         carService = new CarServiceImpl(placeService, carRepository, carMapper);
     }
 
     @Test
-    void testAddCar_Success() {
+    void testAddCar_CarAddedSuccessfully() {
+        // Arrange
         CarDto carDto = new CarDto();
-        carDto.setBrand("Test");
-        carDto.setModel("Test");
-        carDto.setYearOfProduction(1900);
-        carDto.setPlateNumber("Test");
-        carDto.setIsAvailable(true);
-        carDto.setDailyFee(BigDecimal.valueOf(0.23));
+        carDto.setPlateNumber("ABC123");
         carDto.setPlaceId(1);
+        PlaceDto placeDto = new PlaceDto();
+        Car car = new Car();
 
-        when(carRepository.findByPlateNumber("Test")).thenReturn(Optional.empty());
-        when(placeService.getPlaceById(1)).thenReturn(Optional.of(new Place()));
-        when(carMapper.carDtoToCar(carDto)).thenReturn(new Car());
+        when(placeService.getPlaceById(carDto.getPlaceId())).thenReturn(placeDto);
+        when(carRepository.findByPlateNumber(carDto.getPlateNumber())).thenReturn(Optional.empty());
+        when(carMapper.carDtoToCar(carDto)).thenReturn(car);
 
-        assertDoesNotThrow(() -> carService.addCar(carDto));
-        verify(carRepository,times(1)).save(any(Car.class));
+        // Act
+        carService.addCar(carDto);
+
+        // Assert
+        verify(placeService).getPlaceById(carDto.getPlaceId());
+        verify(carRepository).findByPlateNumber(carDto.getPlateNumber());
+        verify(carRepository).save(car);
     }
 
     @Test
-    void testAddCar_DuplicatePlateNumber() {
+    void testAddCar_PlateNumberNotUnique() {
+        // Arrange
         CarDto carDto = new CarDto();
-        carDto.setPlateNumber("Test");
+        carDto.setPlateNumber("ABC123");
+        carDto.setPlaceId(1);
 
-        when(carRepository.findByPlateNumber("Test")).thenReturn(Optional.of(new Car()));
+        when(carRepository.findByPlateNumber(carDto.getPlateNumber())).thenReturn(Optional.of(new Car()));
 
+        // Act and Assert
         assertThrows(DuplicateCarPlateNumberException.class, () -> carService.addCar(carDto));
-    }
-    @Test
-    void testAddCar_PlaceNotFound() {
-        CarDto carDto = new CarDto();
-        carDto.setPlaceId(1);
-
-        when(placeService.getPlaceById(1)).thenReturn(Optional.empty());
-
-        assertThrows(PlaceNotFoundException.class, () -> carService.addCar(carDto));
     }
     @Test
     void testGetCarDtoById_success(){
@@ -101,7 +92,7 @@ class CarServiceImplTest {
         when(carRepository.findById(carId)).thenReturn(Optional.of(car));
         when(carMapper.carToCarDto(car)).thenReturn(carDto);
 
-        CarDto result = carService.getCarDtoById(carId);
+        CarDto result = carService.getCarById(carId);
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(carDto,result);
@@ -110,7 +101,7 @@ class CarServiceImplTest {
     void testGetCarDtoById_CarNotFound(){
         when(carRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThrows(CarNotFoundException.class,()->carService.getCarDtoById(1));
+        assertThrows(CarNotFoundException.class,()->carService.getCarById(1));
     }
     @Test
     void testGetAllCars_Success(){
@@ -143,19 +134,6 @@ class CarServiceImplTest {
         when(carRepository.findCarsByIsAvailableTrue()).thenReturn(Optional.empty());
 
         assertThrows(CarNotFoundException.class,()->carService.getAvailableCars());
-    }
-
-    @Test
-    void testIsCarPlateNumberUnique_UniqueNumber(){
-        when(carRepository.findByPlateNumber(any())).thenReturn(Optional.empty());
-
-        Assertions.assertTrue(carService.isCarPlateNumberUnique(any()));
-    }
-    @Test
-    void testIsCarPlateNumberUnique_NotUniqueNumber(){
-        when(carRepository.findByPlateNumber(any())).thenReturn(Optional.of(new Car()));
-
-        Assertions.assertFalse(carService.isCarPlateNumberUnique(any()));
     }
     @Test
     void testEditCar_Success(){

@@ -52,7 +52,7 @@ class UserServiceImplTest {
         when(userMapper.userToUserDto(user)).thenReturn(userDto);
 
         // Act
-        UserDto result = userService.getUserDtoById(userId);
+        UserDto result = userService.getUserById(userId);
 
         // Assert
         Assertions.assertNotNull(result);
@@ -63,7 +63,7 @@ class UserServiceImplTest {
         when(userRepository.findById(1)).thenReturn(Optional.empty());
 
         // Вызываем метод и ожидаем исключение UserNotFoundException
-        assertThrows(UserNotFoundException.class, () -> userService.getUserDtoById(1));
+        assertThrows(UserNotFoundException.class, () -> userService.getUserById(1));
     }
     @Test
     void testGetAllUsers() {

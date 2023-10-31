@@ -11,7 +11,6 @@ import innowise.khorsun.carorderservice.service.PlaceService;
 import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.error.car.CarNotFoundException;
 import innowise.khorsun.carorderservice.util.error.car.DuplicateCarPlateNumberException;
-import innowise.khorsun.carorderservice.util.error.place.PlaceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,14 +26,14 @@ public class CarServiceImpl implements CarService {
     private final CarMapper carMapper;
 
     @Autowired
-    public CarServiceImpl( PlaceService placeService, CarRepository carRepository,
+    public CarServiceImpl(PlaceService placeService, CarRepository carRepository,
                           CarMapper carMapper) {
         this.placeService = placeService;
         this.carRepository = carRepository;
         this.carMapper = carMapper;
     }
 
-    public CarDto getCarDtoById(Integer id) {
+    public CarDto getCarById(Integer id) {
         return carRepository.findById(id)
                 .map(carMapper::carToCarDto)
                 .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND,
@@ -51,16 +50,25 @@ public class CarServiceImpl implements CarService {
 
     @Transactional
     public void addCar(CarDto carDto) {
-        if (!isCarPlateNumberUnique(carDto.getPlateNumber())) {
-            throw new DuplicateCarPlateNumberException(PropertyUtil.DUPLICATE_PLATE_NUMBER, new Date());
-        }
-        if (placeService.getPlaceById(carDto.getPlaceId()).isEmpty()){
-            throw new PlaceNotFoundException(PropertyUtil.PLACE_NOT_FOUND,new Date());
-        }
+        checkIfDuplicateCarPlateNumberExist(carDto.getPlateNumber());
+        checkIfPlaceExist(carDto.getPlaceId());
         Car car = carMapper.carDtoToCar(carDto);
         carRepository.save(car);
     }
 
+    private void checkIfPlaceExist(Integer placeId) {
+        placeService.getPlaceById(placeId);
+    }
+
+    private void checkIfDuplicateCarPlateNumberExist(String plateNumber) {
+        if (!isCarPlateNumberUnique(plateNumber)) {
+            throw new DuplicateCarPlateNumberException(PropertyUtil.DUPLICATE_PLATE_NUMBER, new Date());
+        }
+    }
+
+    private boolean isCarPlateNumberUnique(String plateNumber) {
+        return carRepository.findByPlateNumber(plateNumber).isEmpty();
+    }
     @Transactional
     public void removeCar(Integer id) {
         carRepository.deleteById(id);
@@ -87,21 +95,19 @@ public class CarServiceImpl implements CarService {
                 .map(carMapper::carToCarDto).toList();
     }
 
-    public boolean isCarPlateNumberUnique(String plateNumber) {
-        return carRepository.findByPlateNumber(plateNumber).isEmpty();
-    }
     @Override
     @Transactional
-    public void setCarAvailability(BookingRequestModel bookingRequestModel ,Boolean status){
+    public void setCarAvailability(BookingRequestModel bookingRequestModel, Boolean status) {
         Car car = carRepository
                 .findById(bookingRequestModel.getCarId())
                 .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()));
         car.setIsAvailable(status);
         carRepository.save(car);
     }
+
     @Override
     @Transactional
-    public void setCarAvailability(Integer id ,Boolean status){
+    public void setCarAvailability(Integer id, Boolean status) {
         Car car = carRepository
                 .findById(id)
                 .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()));

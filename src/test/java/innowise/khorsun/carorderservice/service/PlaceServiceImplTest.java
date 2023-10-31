@@ -43,7 +43,7 @@ class PlaceServiceImplTest {
         when(placeRepository.findById(placeId)).thenReturn(Optional.of(place));
         when(placeMapper.placeToPlaceDto(place)).thenReturn(placeDto);
 
-        PlaceDto placeDtoById = placeService.getPlaceDtoById(placeId);
+        PlaceDto placeDtoById = placeService.getPlaceById(placeId);
 
         Assertions.assertNotNull(placeDtoById);
         Assertions.assertEquals(placeDto,placeDtoById);
@@ -52,7 +52,7 @@ class PlaceServiceImplTest {
     void testGetPlaceDtoById_PlaceNotFound(){
         when(placeRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThrows(PlaceNotFoundException.class,()->placeService.getPlaceDtoById(1));
+        assertThrows(PlaceNotFoundException.class,()->placeService.getPlaceById(1));
     }
     @Test
     void testGetAllPlaces(){
@@ -116,28 +116,5 @@ class PlaceServiceImplTest {
         assertThrows(PlaceNotFoundException.class,()->placeService.editPlace(1,updatedPlace));
     }
 
-    @Test
-    void testGetPlaceById(){
-        Integer placeId=1;
-        Place expectedPlace = new Place();
-        expectedPlace.setId(1);
-        expectedPlace.setName("Test");
-        when(placeRepository.findById(1)).thenReturn(Optional.of(expectedPlace));
-
-        Optional<Place> result = placeService.getPlaceById(placeId);
-
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(expectedPlace, result.get());
-    }
-    @Test
-    void testGetPlaceById_WhenPlaceDoesNotExist() {
-        Integer placeId = 1;
-
-        when(placeRepository.findById(placeId)).thenReturn(Optional.empty());
-
-        Optional<Place> result = placeService.getPlaceById(placeId);
-
-        Assertions.assertFalse(result.isPresent());
-    }
 
 }
