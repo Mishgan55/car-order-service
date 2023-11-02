@@ -3,7 +3,6 @@ package innowise.khorsun.carorderservice.service.impl;
 import innowise.khorsun.carorderservice.dto.CarDto;
 import innowise.khorsun.carorderservice.entity.Car;
 import innowise.khorsun.carorderservice.mapper.CarMapper;
-import innowise.khorsun.carorderservice.model.BookingRequestModel;
 import innowise.khorsun.carorderservice.model.CarUpdateDto;
 import innowise.khorsun.carorderservice.repositorie.CarRepository;
 import innowise.khorsun.carorderservice.service.CarService;
@@ -41,7 +40,10 @@ public class CarServiceImpl implements CarService {
     }
 
     public List<CarDto> getAllCars() {
-        return carRepository.findAll().stream().map(carMapper::carToCarDto).toList();
+        return carRepository.findAll()
+                .stream()
+                .map(carMapper::carToCarDto)
+                .toList();
     }
 
     @Transactional
@@ -71,8 +73,8 @@ public class CarServiceImpl implements CarService {
     }
 
     @Transactional
-    public void editCar(Integer id, CarUpdateDto carDto) {
-        Optional<Car> car = carRepository.findById(id);
+    public void editCar(Integer carId, CarUpdateDto carDto) {
+        Optional<Car> car = carRepository.findById(carId);
         if (car.isPresent()) {
             Car updatedCar = car.get();
             updatedCar.setBrand(carDto.getBrand());
@@ -90,20 +92,17 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    public void setCarAvailability(BookingRequestModel bookingRequestModel, Boolean status) {
+    public void changeAvailability(Integer carId) {
         Car car = carRepository
-                .findById(bookingRequestModel.getCarId())
+                .findById(carId)
                 .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()));
-        car.setIsAvailable(status);
-    }
-
-    @Override
-    @Transactional
-    public void setCarAvailability(Integer id, Boolean status) {
-        Car car = carRepository
-                .findById(id)
-                .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()));
-        car.setIsAvailable(status);
+        car.setIsAvailable(!isCarAvailable(carId));
         carRepository.save(car);
+    }
+    private boolean isCarAvailable(Integer carId){
+        return carRepository
+                .findById(carId)
+                .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()))
+                .getIsAvailable();
     }
 }
