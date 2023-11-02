@@ -34,6 +34,10 @@ public class CarController {
     public ResponseEntity<CarDto> getCar(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(carService.getCarDtoById(id));
     }
+    @GetMapping("/get-available-cars")
+    public ResponseEntity<List<CarDto>> getAvailableCars(){
+        return ResponseEntity.ok(carService.getAvailableCars());
+    }
 
     @GetMapping
     public ResponseEntity<List<CarDto>> getAllCars() {
