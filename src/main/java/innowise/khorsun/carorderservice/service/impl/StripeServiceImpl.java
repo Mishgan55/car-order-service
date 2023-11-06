@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -60,8 +59,7 @@ public class StripeServiceImpl implements StripeService {
                                         )
                                         .setUnitAmount(
                                                 paymentService
-                                                        .calculatePaymentAmount(userId)
-                                                        .longValue())
+                                                        .calculatePaymentAmount(userId))
                                         .build()
                         )
                         .setQuantity(1L)
@@ -83,14 +81,14 @@ public class StripeServiceImpl implements StripeService {
             if (sessionUrl == null || sessionId == null) {
                 throw new PaymentSessionException(PropertyUtil.INVALID_SESSION_MESSAGE);
             }
-            BigDecimal amountToPay = new BigDecimal(session.getAmountTotal());
+            Long amountTotal = session.getAmountTotal();
             PaymentDto paymentDto = new PaymentDto();
             paymentDto.setUserId(userId);
             paymentDto.setSessionId(sessionId);
             paymentDto.setUrl(new URL(sessionUrl));
             paymentDto.setType(paymentRequestInfoDto.getType());
             paymentDto.setStatus(Status.PENDING);
-            paymentDto.setPaymentAmount(amountToPay.divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP));
+            paymentDto.setPaymentAmount(BigDecimal.valueOf(amountTotal));
             return paymentMapper.paymentToPaymentDto(paymentService.addPayment(paymentDto));
         } catch (StripeException e) {
             throw new PaymentSessionException(PropertyUtil.STRIPE_ERROR_MESSAGE + e.getMessage());
