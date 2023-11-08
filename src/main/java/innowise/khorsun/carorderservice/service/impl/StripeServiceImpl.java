@@ -1,6 +1,5 @@
 package innowise.khorsun.carorderservice.service.impl;
 
-import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -21,25 +20,25 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static com.stripe.Stripe.*;
+
 
 @Service
 public class StripeServiceImpl implements StripeService {
-
     private final PaymentService paymentService;
     private final PaymentMapper paymentMapper;
-
     @Value("${STRIPE_API_KEY}")
-    private String stripeApiKey;
+    private static String stripeApiKey;
 
     @Autowired
     public StripeServiceImpl(PaymentService paymentService, PaymentMapper paymentMapper) {
+        apiKey = stripeApiKey;
         this.paymentService = paymentService;
         this.paymentMapper = paymentMapper;
     }
 
     @Override
     public SessionCreateParams createPaymentSession(Integer userId, Type type) {
-        Stripe.apiKey = stripeApiKey;
         SessionCreateParams.Builder builder = new SessionCreateParams.Builder();
         builder.addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD);
         builder.setMode(SessionCreateParams.Mode.PAYMENT);

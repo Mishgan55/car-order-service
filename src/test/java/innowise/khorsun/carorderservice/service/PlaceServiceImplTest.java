@@ -33,8 +33,8 @@ class PlaceServiceImplTest {
     private PlaceMapper placeMapper;
 
     @Test
-    void testGetPlaceDtoById(){
-        Integer placeId=1;
+    void testGetPlaceDtoById() {
+        Integer placeId = 1;
         Place place = new Place();
         place.setId(placeId);
 
@@ -46,27 +46,30 @@ class PlaceServiceImplTest {
         PlaceDto placeDtoById = placeService.getPlaceById(placeId);
 
         Assertions.assertNotNull(placeDtoById);
-        Assertions.assertEquals(placeDto,placeDtoById);
+        Assertions.assertEquals(placeDto, placeDtoById);
     }
+
     @Test
-    void testGetPlaceDtoById_PlaceNotFound(){
+    void testGetPlaceDtoById_PlaceNotFound() {
         when(placeRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThrows(PlaceNotFoundException.class,()->placeService.getPlaceById(1));
+        assertThrows(PlaceNotFoundException.class, () -> placeService.getPlaceById(1));
     }
+
     @Test
-    void testGetAllPlaces(){
+    void testGetAllPlaces() {
         List<PlaceDto> placeDto = List.of(new PlaceDto(), new PlaceDto());
-        when(placeRepository.findAll()).thenReturn(List.of(new Place(),new Place()));
-        when(placeMapper.placeToPlaceDto(any())).thenReturn(placeDto.get(0),placeDto.get(1));
+        when(placeRepository.findAll()).thenReturn(List.of(new Place(), new Place()));
+        when(placeMapper.placeToPlaceDto(any())).thenReturn(placeDto.get(0), placeDto.get(1));
 
         List<PlaceDto> allPlaces = placeService.getAllPlaces();
 
         Assertions.assertNotNull(allPlaces);
-        Assertions.assertEquals(2,allPlaces.size());
+        Assertions.assertEquals(2, allPlaces.size());
     }
+
     @Test
-    void testAddPlace(){
+    void testAddPlace() {
         PlaceDto placeDto = new PlaceDto();
         placeDto.setName("Test");
         placeDto.setAddress("Test");
@@ -78,20 +81,22 @@ class PlaceServiceImplTest {
 
         placeService.addPlace(placeDto);
 
-        verify(placeRepository,times(1)).save(any(Place.class));
+        verify(placeRepository, times(1)).save(any(Place.class));
     }
+
     @Test
-    void testRemovePlace(){
+    void testRemovePlace() {
         doNothing().when(placeRepository).deleteById(1);
 
         placeService.removePlace(1);
 
-        verify(placeRepository,times(1)).deleteById(1);
+        verify(placeRepository, times(1)).deleteById(1);
     }
+
     @Test
-    void testEditPlace(){
-        Integer placeId=1;
-        String test="Test";
+    void testEditPlace() {
+        Integer placeId = 1;
+        String test = "Test";
         PlaceDto updatedPlace = new PlaceDto();
         updatedPlace.setName(test);
         updatedPlace.setAddress(test);
@@ -100,20 +105,21 @@ class PlaceServiceImplTest {
         Place place = new Place();
         when(placeRepository.findById(placeId)).thenReturn(Optional.of(place));
 
-        placeService.editPlace(placeId,updatedPlace);
+        placeService.editPlace(placeId, updatedPlace);
 
-        verify(placeRepository,times(1)).findById(placeId);
-        Assertions.assertEquals(test,place.getName());
-        Assertions.assertEquals(test,place.getAddress());
-        Assertions.assertEquals(test,place.getWorkHours());
+        verify(placeRepository, times(1)).findById(placeId);
+        Assertions.assertEquals(test, place.getName());
+        Assertions.assertEquals(test, place.getAddress());
+        Assertions.assertEquals(test, place.getWorkHours());
     }
+
     @Test
-    void testEditPlace_PlaceNotFound(){
+    void testEditPlace_PlaceNotFound() {
         when(placeRepository.findById(1)).thenReturn(Optional.empty());
 
         PlaceDto updatedPlace = new PlaceDto();
 
-        assertThrows(PlaceNotFoundException.class,()->placeService.editPlace(1,updatedPlace));
+        assertThrows(PlaceNotFoundException.class, () -> placeService.editPlace(1, updatedPlace));
     }
 
 

@@ -80,10 +80,11 @@ class CarServiceImplTest {
         // Act and Assert
         assertThrows(DuplicateCarPlateNumberException.class, () -> carService.addCar(carDto));
     }
-    @Test
-    void testGetCarDtoById_success(){
 
-        Integer carId=1;
+    @Test
+    void testGetCarDtoById_success() {
+
+        Integer carId = 1;
         Car car = new Car();
         car.setId(carId);
 
@@ -95,51 +96,56 @@ class CarServiceImplTest {
         CarDto result = carService.getCarById(carId);
 
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(carDto,result);
+        Assertions.assertEquals(carDto, result);
     }
+
     @Test
-    void testGetCarDtoById_CarNotFound(){
+    void testGetCarDtoById_CarNotFound() {
         when(carRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThrows(CarNotFoundException.class,()->carService.getCarById(1));
+        assertThrows(CarNotFoundException.class, () -> carService.getCarById(1));
     }
+
     @Test
-    void testGetAllCars_Success(){
+    void testGetAllCars_Success() {
 
         List<CarDto> carDto = List.of(new CarDto(), new CarDto());
         List<Car> cars = List.of(new Car(), new Car());
         when(carRepository.findAll()).thenReturn(cars);
-        when(carMapper.carToCarDto(any())).thenReturn(carDto.get(0),carDto.get(1));
+        when(carMapper.carToCarDto(any())).thenReturn(carDto.get(0), carDto.get(1));
 
         List<CarDto> allCars = carService.getAllCars();
 
         Assertions.assertNotNull(allCars);
-        Assertions.assertEquals(2,allCars.size());
+        Assertions.assertEquals(2, allCars.size());
     }
+
     @Test
-    void testGetAvailableCars_Success(){
+    void testGetAvailableCars_Success() {
         List<CarDto> carDto = List.of(new CarDto(), new CarDto());
         List<Car> cars = List.of(new Car(), new Car());
 
         when(carRepository.findCarsByIsAvailableTrue()).thenReturn(Optional.of(cars));
-        when(carMapper.carToCarDto(any())).thenReturn(carDto.get(0),carDto.get(1));
+        when(carMapper.carToCarDto(any())).thenReturn(carDto.get(0), carDto.get(1));
 
         List<CarDto> result = carService.getAvailableCars();
 
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(carDto,result);
+        Assertions.assertEquals(carDto, result);
     }
+
     @Test
-    void testGetAvailableCars_NotFoundCars(){
+    void testGetAvailableCars_NotFoundCars() {
         when(carRepository.findCarsByIsAvailableTrue()).thenReturn(Optional.empty());
 
-        assertThrows(CarNotFoundException.class,()->carService.getAvailableCars());
+        assertThrows(CarNotFoundException.class, () -> carService.getAvailableCars());
     }
-    @Test
-    void testEditCar_Success(){
 
-        Integer carId=1;
-        String testWord="Test";
+    @Test
+    void testEditCar_Success() {
+
+        Integer carId = 1;
+        String testWord = "Test";
 
         CarUpdateDto carUpdateDto = new CarUpdateDto();
         carUpdateDto.setBrand(testWord);
@@ -150,21 +156,23 @@ class CarServiceImplTest {
 
         when(carRepository.findById(carId)).thenReturn(Optional.of(car));
 
-        carService.editCar(carId,carUpdateDto);
+        carService.editCar(carId, carUpdateDto);
 
-        verify(carRepository,times(1)).findById(carId);
-        Assertions.assertEquals(car.getModel(),testWord);
-        Assertions.assertEquals(car.getBrand(),testWord);
+        verify(carRepository, times(1)).findById(carId);
+        Assertions.assertEquals(car.getModel(), testWord);
+        Assertions.assertEquals(car.getBrand(), testWord);
     }
+
     @Test
-    void testEditCar_CarNotFound(){
-        Integer carId=1;
+    void testEditCar_CarNotFound() {
+        Integer carId = 1;
         when(carRepository.findById(carId)).thenReturn(Optional.empty());
 
         CarUpdateDto carUpdateDto = new CarUpdateDto();
 
-        assertThrows(CarNotFoundException.class,()->carService.editCar(carId,carUpdateDto));
+        assertThrows(CarNotFoundException.class, () -> carService.editCar(carId, carUpdateDto));
     }
+
     @Test
     void testSetCarAvailability_Success_WithBookingRequestModel() {
         Integer carId = 1;
@@ -178,6 +186,7 @@ class CarServiceImplTest {
 
         verify(carRepository, times(1)).save(car);
     }
+
     @Test
     void testSetCarAvailability_CarNotFound_WithBookingRequestModel() {
         BookingRequestModel bookingRequestModel = new BookingRequestModel();
@@ -205,13 +214,14 @@ class CarServiceImplTest {
 
         assertThrows(CarNotFoundException.class, () -> carService.setCarAvailability(3, true));
     }
+
     @Test
-    void testRemoveCar_Success(){
-        Integer carId=1;
+    void testRemoveCar_Success() {
+        Integer carId = 1;
         doNothing().when(carRepository).deleteById(carId);
 
         carService.removeCar(carId);
 
-        verify(carRepository,times(1)).deleteById(carId);
+        verify(carRepository, times(1)).deleteById(carId);
     }
 }

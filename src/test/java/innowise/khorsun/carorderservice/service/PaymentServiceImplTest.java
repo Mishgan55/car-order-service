@@ -54,10 +54,10 @@ class PaymentServiceImplTest {
 
     @Test
     void testAddPayment_Success() {
-        PaymentDto paymentDto = new PaymentDto(); // Create a PaymentDto with necessary data
+        PaymentDto paymentDto = new PaymentDto();
 
         Payment payment = new Payment();
-        payment.setId(1); // Set the ID to a specific value
+        payment.setId(1);
 
         when(paymentMapper.paymentDtoToPayment(paymentDto)).thenReturn(payment);
         when(paymentRepository.save(payment)).thenReturn(payment);
@@ -121,7 +121,6 @@ class PaymentServiceImplTest {
     void testCheckSuccess_SuccessfullyPaymentMessage() {
         String sessionId = "your_session_id";
 
-        // Create mock objects for Payment, User, and Booking
         Payment payment = mock(Payment.class);
         User user = mock(User.class);
         Booking booking = mock(Booking.class);
@@ -138,9 +137,9 @@ class PaymentServiceImplTest {
         verify(payment, times(1)).setStatus(Status.PAYED);
         verify(booking, times(1)).setStatus(Status.PAYED);
     }
+
     @Test
     void testCalculatePaymentAmount() {
-        // Arrange
         Integer userId = 1;
         Booking booking = new Booking();
         booking.setStartDateTime(LocalDateTime.now().minusHours(2));
@@ -166,10 +165,11 @@ class PaymentServiceImplTest {
 
         assertEquals(expectedAmount, paymentAmount);
     }
-    @Test
-    void testFindBySessionId(){
 
-        String sessionId="Test id";
+    @Test
+    void testFindBySessionId() {
+
+        String sessionId = "Test id";
         Payment payment = new Payment();
         payment.setSessionId(sessionId);
 
@@ -177,8 +177,8 @@ class PaymentServiceImplTest {
 
         Payment result = paymentService.findBySessionId(sessionId);
 
-        verify(paymentRepository,times(1)).findBySessionId(sessionId);
+        verify(paymentRepository, times(1)).findBySessionId(sessionId);
         assertNotNull(result);
-        assertEquals(sessionId,result.getSessionId());
+        assertEquals(sessionId, result.getSessionId());
     }
 }

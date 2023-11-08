@@ -58,6 +58,7 @@ class UserServiceImplTest {
         Assertions.assertNotNull(result);
         Assertions.assertEquals(userDto, result);
     }
+
     @Test
     void testGetUserDtoById_UserNotFound() {
         when(userRepository.findById(1)).thenReturn(Optional.empty());
@@ -65,6 +66,7 @@ class UserServiceImplTest {
         // Вызываем метод и ожидаем исключение UserNotFoundException
         assertThrows(UserNotFoundException.class, () -> userService.getUserById(1));
     }
+
     @Test
     void testGetAllUsers() {
         // Arrange
@@ -80,6 +82,7 @@ class UserServiceImplTest {
         Assertions.assertNotNull(result);
         Assertions.assertEquals(2, result.size());
     }
+
     @Test
     void testAddUser() {
         // Arrange
@@ -100,6 +103,7 @@ class UserServiceImplTest {
         // Assert
         verify(userRepository, times(1)).save(any(User.class));
     }
+
     @Test
     void testIsUserEmailUnique() throws Exception {
         UserDto userDto = new UserDto();
@@ -116,14 +120,15 @@ class UserServiceImplTest {
 
         verify(userRepository).findUserByEmail(userDto.getEmail());
     }
+
     @Test
-    void testIsUserEmailUnique_DuplicateEmail()  {
+    void testIsUserEmailUnique_DuplicateEmail() {
         UserDto userDto = new UserDto();
         userDto.setEmail("test@example.com");
 
         when(userRepository.findUserByEmail(any())).thenReturn(Optional.of(new User()));
 
-        assertThrows(UserDuplicateException.class,()->userService.addUser(userDto));
+        assertThrows(UserDuplicateException.class, () -> userService.addUser(userDto));
     }
 
     @Test
@@ -141,15 +146,17 @@ class UserServiceImplTest {
 
         verify(userRepository).findUserByPhoneNumber(userDto.getPhoneNumber());
     }
+
     @Test
-    void testIsUserPhoneNumberUnique_DuplicateEmail()  {
+    void testIsUserPhoneNumberUnique_DuplicateEmail() {
         UserDto userDto = new UserDto();
         userDto.setEmail("1231234324");
 
         when(userRepository.findUserByPhoneNumber(any())).thenReturn(Optional.of(new User()));
 
-        assertThrows(UserDuplicateException.class,()->userService.addUser(userDto));
+        assertThrows(UserDuplicateException.class, () -> userService.addUser(userDto));
     }
+
     @Test
     void testRemoveUser() {
         // Arrange
@@ -163,6 +170,7 @@ class UserServiceImplTest {
         // Assert
         verify(userRepository, times(1)).deleteById(userId);
     }
+
     @Test
     void testEditUser() {
         // Arrange
@@ -185,13 +193,14 @@ class UserServiceImplTest {
         Assertions.assertEquals(newFirstName, user.getFirstName());
         Assertions.assertEquals(newLastName, user.getLastName());
     }
+
     @Test
-    void testEditUser_UserNotFound(){
+    void testEditUser_UserNotFound() {
         when(userRepository.findById(1)).thenReturn(Optional.empty());
 
         UserUpdateModel userUpdateModel = new UserUpdateModel();
 
-        assertThrows(UserNotFoundException.class,()->userService.editUser(1,userUpdateModel));
+        assertThrows(UserNotFoundException.class, () -> userService.editUser(1, userUpdateModel));
     }
 }
 
