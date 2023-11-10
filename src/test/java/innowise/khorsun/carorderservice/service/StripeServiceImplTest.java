@@ -10,48 +10,36 @@ import innowise.khorsun.carorderservice.model.PaymentRequestModel;
 import innowise.khorsun.carorderservice.service.impl.StripeServiceImpl;
 import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.enums.Type;
+import innowise.khorsun.carorderservice.util.error.payment.PaymentSessionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Value;
 
-import java.util.ArrayList;
-import java.util.List;
-
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.powermock.api.mockito.PowerMockito.doReturn;
-import static org.powermock.api.mockito.PowerMockito.mock;
-
 @ExtendWith(MockitoExtension.class)
 class StripeServiceImplTest {
 
     @InjectMocks
     private StripeServiceImpl stripeService;
-
     @Mock
     private PaymentService paymentService;
-
     @Mock
     private PaymentMapper paymentMapper;
-
-    private SessionCreateParams sessionParams;
+    private SessionCreateParams params;
     private PaymentRequestModel paymentRequestInfoDto;
-
-    @Value("${STRIPE_API_KEY}")
-    private static String stripeApiKey;
+    private static final String STRIPE_API_KEY=
+            "sk_test_51O4gF9Hwob1or3tw2JsMNgK1YdfDQLYQtCpxcyHVM0rnsFbwZyxFb4b1SfiITQ6FzIiPL2sYYCON7RTHzQNdPZvn007FpNxPVh";
 
     @BeforeEach
     void createSessionInformation() {
@@ -59,74 +47,87 @@ class StripeServiceImplTest {
         paymentRequestInfoDto.setUserId(1);
         paymentRequestInfoDto.setType(Type.PAYMENT);
 
-        Stripe.apiKey = stripeApiKey;
+        Stripe.apiKey = STRIPE_API_KEY;
 
-        SessionCreateParams.Builder sessionParamsBuilder = new SessionCreateParams.Builder();
-        sessionParamsBuilder.setMode(SessionCreateParams.Mode.PAYMENT);
-        sessionParamsBuilder.setSuccessUrl(PropertyUtil.PAYMENT_URL + "/success" + "?session_id={CHECKOUT_SESSION_ID}");
-        sessionParamsBuilder.setCancelUrl(PropertyUtil.PAYMENT_URL + "/cancel");
-        sessionParamsBuilder.setClientReferenceId("1");
-        List<SessionCreateParams.LineItem> lineItems = new ArrayList<>();
-        SessionCreateParams.LineItem lineItem = new SessionCreateParams.LineItem.Builder()
-                .setPrice("price_1O9naBHwob1or3twuhQLxLNk")
-                .setQuantity(1L)
-                .build();
-        lineItems.add(lineItem);
+        params =
+                SessionCreateParams.builder()
+                        .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+                        .addLineItem(
+                                SessionCreateParams.LineItem.builder()
+                                        .setPriceData(
+                                                SessionCreateParams.LineItem.PriceData.builder()
+                                                        .setCurrency("gbp")
+                                                        .setUnitAmount(500L)
+                                                        .setProductData(
+                                                                SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                                        .setName("Product")
+                                                                        .build()
+                                                        )
+                                                        .build()
+                                        )
+                                        .setQuantity(1L)
+                                        .build()
+                        )
+                        .setClientReferenceId("1")
+                        .setMode(SessionCreateParams.Mode.PAYMENT)
+                        .setSuccessUrl(PropertyUtil.PAYMENT_URL + "/success" + "?session_id={CHECKOUT_SESSION_ID}")
+                        .setCancelUrl(PropertyUtil.PAYMENT_URL + "/cancel")
+                        .build();
 
-        sessionParamsBuilder.addAllLineItem(lineItems);
-        sessionParams = sessionParamsBuilder.build();
     }
 
     @Test
     void testCreatePaymentSession() {
         Integer userId = 1;
         Type type = Type.PAYMENT;
-
-        when(paymentService.calculatePaymentAmount(userId)).thenReturn(42L);
-
+        when(paymentService.calculatePaymentAmount(userId)).thenReturn(500L);
 
         SessionCreateParams actualParams = stripeService.createPaymentSession(userId, type);
 
-        assertEquals(sessionParams.getMode(), actualParams.getMode());
-        assertEquals(sessionParams.getSuccessUrl(), actualParams.getSuccessUrl());
-        assertEquals(sessionParams.getCancelUrl(), actualParams.getCancelUrl());
-        assertEquals(sessionParams.getClientReferenceId(), actualParams.getClientReferenceId());
+        assertEquals(params.getMode(), actualParams.getMode());
+        assertEquals(params.getSuccessUrl(), actualParams.getSuccessUrl());
+        assertEquals(params.getCancelUrl(), actualParams.getCancelUrl());
+        assertEquals(params.getClientReferenceId(), actualParams.getClientReferenceId());
         assertNotNull(actualParams);
     }
 
     @Test
-    void testGetPaymentFromSession() throws StripeException {
-
-        when(paymentService.calculatePaymentAmount(anyInt())).thenReturn(100L);
-
-        Session session = Mockito.mock(Session.class);
-
-        Session mock = mock(Session.create(sessionParams).getClass());
-        doReturn(session).when(mock);
+    void testGetPaymentFromSession() {
+        when(paymentService.calculatePaymentAmount(anyInt())).thenReturn(500L);
         when(paymentMapper.paymentToPaymentDto(any())).thenReturn(new PaymentDto());
-
         // Act
         PaymentDto paymentDto = stripeService.getPaymentFromSession(paymentRequestInfoDto);
-
         // Assert
         assertNotNull(paymentDto);
-        assertEquals(SessionCreateParams.Mode.PAYMENT, sessionParams.getMode());
+        assertEquals(SessionCreateParams.Mode.PAYMENT, params.getMode());
         assertEquals(PropertyUtil.PAYMENT_URL
-                + "/success" + "?session_id={CHECKOUT_SESSION_ID}", sessionParams.getSuccessUrl());
+                + "/success" + "?session_id={CHECKOUT_SESSION_ID}", params.getSuccessUrl());
         verify(paymentService, times(1)).calculatePaymentAmount(anyInt());
         verify(paymentMapper, times(1)).paymentToPaymentDto(any());
     }
 
     @Test
-    void testGetPaymentFromSessionWithInvalidSession() throws StripeException {
+    void testGetPaymentFromSession_InvalidSession() throws StripeException {
+        Integer userId = 1;
+        Type type = Type.PAYMENT;
+        when(paymentService.calculatePaymentAmount(userId)).thenReturn(500L);
 
-        Session session = Mockito.mock(Session.class);
-        when(session.getUrl()).thenReturn(sessionParams.getSuccessUrl());
-        when(paymentService.calculatePaymentAmount(anyInt())).thenReturn(100L);
-        Session mock = mock(Session.create(sessionParams).getClass());
-        doReturn(session).when(mock);
+        SessionCreateParams actualParams = stripeService.createPaymentSession(userId, type);
 
-        assertEquals(sessionParams.getSuccessUrl(), session.getUrl());
-        assertDoesNotThrow(() -> stripeService.getPaymentFromSession(paymentRequestInfoDto));
+        when(Session.create(actualParams)).thenThrow(new PaymentSessionException("TEST"));
+
+        assertThrows(PaymentSessionException.class, () -> stripeService.getPaymentFromSession(paymentRequestInfoDto));
+    }
+    @Test
+    void testGetPaymentFromSession_MalformedUrl() throws StripeException {
+        Integer userId = 1;
+        Type type = Type.PAYMENT;
+        when(paymentService.calculatePaymentAmount(userId)).thenReturn(500L);
+
+        SessionCreateParams actualParams = stripeService.createPaymentSession(userId, type);
+
+        when(Session.create(actualParams).getUrl()).thenReturn(null);
+
+        assertThrows(PaymentSessionException.class, () -> stripeService.getPaymentFromSession(paymentRequestInfoDto));
     }
 }
