@@ -44,12 +44,11 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public void addBooking(BookingRequestModel bookingRequestModel) {
         checkIfActiveBookingExists(bookingRequestModel.getUserId());
-        carService.setCarAvailability(bookingRequestModel, false);
+        carService.changeAvailability(bookingRequestModel.getCarId());
         Booking booking = bookingMapper.bookingRequestModelToBooking(bookingRequestModel);
         booking.setStartDateTime(LocalDateTime.now());
         booking.setStatus(Status.IN_PROGRESS);
         bookingRepository.save(booking);
-
     }
 
     @Override
@@ -71,7 +70,7 @@ public class BookingServiceImpl implements BookingService {
         optionalBooking.ifPresent(reservation -> {
             reservation.setEndDateTime(LocalDateTime.now());
             reservation.setStatus(Status.PENDING);
-            carService.setCarAvailability(reservation.getCar().getId(), true);
+            carService.changeAvailability(reservation.getCar().getId());
         });
     }
 
