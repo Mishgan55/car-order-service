@@ -32,7 +32,7 @@ public class CarController {
 
     @GetMapping("/{id}")
     public ResponseEntity<CarDto> getCar(@PathVariable("id") Integer id) {
-        return ResponseEntity.ok(carService.getCarDtoById(id));
+        return ResponseEntity.ok(carService.getCarById(id));
     }
     @GetMapping("/get-available-cars")
     public ResponseEntity<List<CarDto>> getAvailableCars(){

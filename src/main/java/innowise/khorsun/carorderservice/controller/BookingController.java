@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/bookings")
@@ -26,6 +27,10 @@ public class BookingController {
     @PostMapping
     public void addBooking(@RequestBody @Valid BookingRequestModel bookingRequestModel){
         bookingService.addBooking(bookingRequestModel);
+    }
+    @GetMapping("/{id}/get-bookings-by-user")
+    public ResponseEntity<List<BookingDto>> getBookingsByUser(@PathVariable("id")Integer userId){
+        return ResponseEntity.ok(bookingService.getBookingsByUserId(userId));
     }
     @GetMapping("/{id}")
     public ResponseEntity<BookingDto> getBookingDtoById(@PathVariable("id") Integer id){

@@ -5,11 +5,11 @@ import innowise.khorsun.carorderservice.entity.Car;
 import innowise.khorsun.carorderservice.mapper.CarMapper;
 import innowise.khorsun.carorderservice.model.CarUpdateDto;
 import innowise.khorsun.carorderservice.repositorie.CarRepository;
-import innowise.khorsun.carorderservice.repositorie.PlaceRepository;
 import innowise.khorsun.carorderservice.service.CarService;
+import innowise.khorsun.carorderservice.service.PlaceService;
+import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.error.car.CarNotFoundException;
 import innowise.khorsun.carorderservice.util.error.car.DuplicateCarPlateNumberException;
-import innowise.khorsun.carorderservice.util.error.place.PlaceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,55 +20,68 @@ import java.util.Optional;
 
 @Service
 public class CarServiceImpl implements CarService {
-    private final PlaceRepository placeRepository;
+    private final PlaceService placeService;
     private final CarRepository carRepository;
     private final CarMapper carMapper;
 
-
     @Autowired
-    public CarServiceImpl(PlaceRepository placeRepository, CarRepository carRepository, CarMapper carMapper) {
-        this.placeRepository = placeRepository;
+    public CarServiceImpl(PlaceService placeService, CarRepository carRepository,
+                          CarMapper carMapper) {
+        this.placeService = placeService;
         this.carRepository = carRepository;
         this.carMapper = carMapper;
     }
 
-    public CarDto getCarDtoById(Integer id) {
+    public CarDto getCarById(Integer id) {
         return carRepository.findById(id)
                 .map(carMapper::carToCarDto)
-                .orElseThrow(() -> new CarNotFoundException("Not found", new Date()));
+                .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND,
+                        new Date()));
     }
 
     public List<CarDto> getAllCars() {
-        return carRepository.findAll().stream().map(carMapper::carToCarDto).toList();
+        return carRepository.findAll()
+                .stream()
+                .map(carMapper::carToCarDto)
+                .toList();
     }
 
     @Transactional
     public void addCar(CarDto carDto) {
-        if (!isCarPlateNumberUnique(carDto.getPlateNumber())) {
-            throw new DuplicateCarPlateNumberException("Car with this plate number already exists.", new Date());
-        }
-        if (placeRepository.findById(carDto.getPlaceId()).isEmpty()) {
-            throw new PlaceNotFoundException("Place not found", new Date());
-        }
+        checkIfDuplicateCarPlateNumberExist(carDto.getPlateNumber());
+        checkIfPlaceExist(carDto.getPlaceId());
         Car car = carMapper.carDtoToCar(carDto);
         carRepository.save(car);
     }
 
+    private void checkIfPlaceExist(Integer placeId) {
+        placeService.getPlaceDtoById(placeId);
+    }
+
+    private void checkIfDuplicateCarPlateNumberExist(String plateNumber) {
+        if (!isCarPlateNumberUnique(plateNumber)) {
+            throw new DuplicateCarPlateNumberException(PropertyUtil.DUPLICATE_PLATE_NUMBER, new Date());
+        }
+    }
+
+    private boolean isCarPlateNumberUnique(String plateNumber) {
+        return carRepository.findByPlateNumber(plateNumber).isEmpty();
+    }
     @Transactional
     public void removeCar(Integer id) {
         carRepository.deleteById(id);
     }
 
     @Transactional
-    public void editCar(Integer id, CarUpdateDto carDto) {
-        Optional<Car> car = carRepository.findById(id);
+    public void editCar(Integer carId, CarUpdateDto carDto) {
+        Optional<Car> car = carRepository.findById(carId);
         if (car.isPresent()) {
             Car updatedCar = car.get();
             updatedCar.setBrand(carDto.getBrand());
             updatedCar.setModel(carDto.getModel());
             updatedCar.setIsAvailable(carDto.getIsAvailable());
         } else {
-            throw new CarNotFoundException("Car not found", new Date());
+            throw new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date());
         }
     }
 
@@ -77,9 +90,19 @@ public class CarServiceImpl implements CarService {
         return carRepository.findCarsByIsAvailableTrue().stream().map(carMapper::carToCarDto).toList();
     }
 
-    public boolean isCarPlateNumberUnique(String plateNumber) {
-        return carRepository.findByPlateNumber(plateNumber).isEmpty();
+    @Override
+    @Transactional
+    public void changeAvailability(Integer carId) {
+        Car car = carRepository
+                .findById(carId)
+                .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()));
+        car.setIsAvailable(!isCarAvailable(carId));
+        carRepository.save(car);
     }
-
-
+    private boolean isCarAvailable(Integer carId){
+        return carRepository
+                .findById(carId)
+                .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()))
+                .getIsAvailable();
+    }
 }

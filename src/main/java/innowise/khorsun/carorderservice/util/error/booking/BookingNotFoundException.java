@@ -1,4 +1,4 @@
-package innowise.khorsun.carorderservice.util.error.reservation;
+package innowise.khorsun.carorderservice.util.error.booking;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

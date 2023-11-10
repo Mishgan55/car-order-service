@@ -4,6 +4,7 @@ import innowise.khorsun.carorderservice.dto.PlaceDto;
 import innowise.khorsun.carorderservice.mapper.PlaceMapper;
 import innowise.khorsun.carorderservice.repositorie.PlaceRepository;
 import innowise.khorsun.carorderservice.service.PlaceService;
+import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.error.place.PlaceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,12 +30,14 @@ public class PlaceServiceImpl implements PlaceService {
     public PlaceDto getPlaceDtoById(Integer id) {
         return placeRepository.findById(id)
                 .map(placeMapper::placeToPlaceDto)
-                .orElseThrow(() -> new PlaceNotFoundException("Place not found", new Date()));
+                .orElseThrow(() -> new PlaceNotFoundException(PropertyUtil.PLACE_NOT_FOUND, new Date()));
     }
 
     @Override
     public List<PlaceDto> getAllPlaces() {
-        return placeRepository.findAll().stream()
+        return placeRepository
+                .findAll()
+                .stream()
                 .map(placeMapper::placeToPlaceDto).toList();
     }
 
@@ -60,7 +63,7 @@ public class PlaceServiceImpl implements PlaceService {
                     existingPlace.setWorkHours(updatedPlaceDto.getWorkHours());
                 },
                 () -> {
-                    throw new PlaceNotFoundException("Place not found", new Date());
+                    throw new PlaceNotFoundException(PropertyUtil.PLACE_NOT_FOUND, new Date());
                 }
         );
     }
