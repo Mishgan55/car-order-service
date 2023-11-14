@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -40,7 +42,7 @@ class BookingServiceImplTest {
     private BookingServiceImpl bookingService;
     @Mock
     private BookingRepository bookingRepository;
-    @Mock
+    @Spy
     private BookingMapper bookingMapper;
     @Mock
     private CarService carService;
@@ -81,7 +83,7 @@ class BookingServiceImplTest {
 
         bookingService.addBooking(bookingRequestModel);
 
-        verify(carService).setCarAvailability(bookingRequestModel, false);
+        verify(carService).changeAvailability(bookingRequestModel.getCarId());
         verify(booking).setStartDateTime(any(LocalDateTime.class));
         verify(booking).setStatus(Status.IN_PROGRESS);
         verify(bookingRepository).save(booking);
@@ -109,12 +111,12 @@ class BookingServiceImplTest {
 
         when(bookingRepository.findBookingByIdAndStatus(bookingId, Status.PENDING)).thenReturn(Optional.empty());
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
-        doNothing().when(carService).setCarAvailability(booking.getCar().getId(), true);
+        doNothing().when(carService).changeAvailability(booking.getCar().getId());
 
         bookingService.returnBooking(bookingId);
 
         Assertions.assertEquals(Status.PENDING, booking.getStatus());
-        verify(carService).setCarAvailability(booking.getCar().getId(), true);
+        verify(carService).changeAvailability(booking.getCar().getId());
     }
 
     @Test
@@ -133,7 +135,7 @@ class BookingServiceImplTest {
 
         Booking booking = new Booking();
         booking.setStatus(status);
-        when(bookingRepository.findBookingByUserIdAndStatus(any(), any(Status.class))).thenReturn(Optional.of(booking));
+        when(bookingRepository.findBookingByUserIdAndStatus(anyInt(), any(Status.class))).thenReturn(Optional.of(booking));
 
         Booking result = bookingService.getBookingByUserIdAndStatus(userId, status);
 
@@ -161,7 +163,7 @@ class BookingServiceImplTest {
         when(userService.getUserById(userId)).thenReturn(userDto);
 
         when(bookingRepository.findBookingByUserId(userId)).thenReturn(bookings);
-        when(bookingMapper.bookingToBookingDto(any())).thenReturn(bookingDto.get(0), bookingDto.get(1));
+        when(bookingMapper.bookingToBookingDto(any(Booking.class))).thenReturn(bookingDto.get(0), bookingDto.get(1));
 
         List<BookingDto> result = bookingService.getBookingsByUserId(userId);
 

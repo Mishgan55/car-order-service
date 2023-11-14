@@ -4,7 +4,6 @@ import innowise.khorsun.carorderservice.dto.CarDto;
 import innowise.khorsun.carorderservice.dto.PlaceDto;
 import innowise.khorsun.carorderservice.entity.Car;
 import innowise.khorsun.carorderservice.mapper.CarMapper;
-import innowise.khorsun.carorderservice.model.BookingRequestModel;
 import innowise.khorsun.carorderservice.model.CarUpdateDto;
 import innowise.khorsun.carorderservice.repositorie.CarRepository;
 import innowise.khorsun.carorderservice.service.impl.CarServiceImpl;
@@ -16,13 +15,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -38,7 +38,7 @@ class CarServiceImplTest {
     private PlaceService placeService;
     @Mock
     private CarRepository carRepository;
-    @Mock
+    @Spy
     private CarMapper carMapper;
 
     @BeforeEach
@@ -174,46 +174,27 @@ class CarServiceImplTest {
     }
 
     @Test
-    void testSetCarAvailability_Success_WithBookingRequestModel() {
+    void testChangeAvailability_Success() {
         Integer carId = 1;
-        BookingRequestModel bookingRequestModel = new BookingRequestModel();
-        bookingRequestModel.setCarId(carId);
-
         Car car = new Car();
+        car.setId(carId);
+        car.setIsAvailable(true);
         when(carRepository.findById(carId)).thenReturn(Optional.of(car));
 
-        assertDoesNotThrow(() -> carService.setCarAvailability(bookingRequestModel, true));
+        carService.changeAvailability(carId);
 
-        verify(carRepository, times(1)).save(car);
+        verify(carRepository, times(2)).findById(1);
+        assertFalse(car.getIsAvailable());
     }
 
     @Test
-    void testSetCarAvailability_CarNotFound_WithBookingRequestModel() {
-        BookingRequestModel bookingRequestModel = new BookingRequestModel();
-        bookingRequestModel.setCarId(1);
+    void testChangeAvailability_CarNotFound(){
+        Integer carId=1;
+        when(carRepository.findById(carId)).thenReturn(Optional.empty());
 
-        when(carRepository.findById(1)).thenReturn(Optional.empty());
-
-        assertThrows(CarNotFoundException.class, () -> carService.setCarAvailability(bookingRequestModel, true));
+        assertThrows(CarNotFoundException.class,()->carService.changeAvailability(carId));
     }
 
-    @Test
-    void testSetCarAvailability_Success_WithCarId() {
-        Integer carId = 2;
-        Car car = new Car();
-        when(carRepository.findById(carId)).thenReturn(Optional.of(car));
-
-        assertDoesNotThrow(() -> carService.setCarAvailability(carId, true));
-
-        verify(carRepository, times(1)).save(car);
-    }
-
-    @Test
-    void testSetCarAvailability_CarNotFound_WithCarId() {
-        when(carRepository.findById(3)).thenReturn(Optional.empty()); // Указываем несуществующий carId
-
-        assertThrows(CarNotFoundException.class, () -> carService.setCarAvailability(3, true));
-    }
 
     @Test
     void testRemoveCar_Success() {

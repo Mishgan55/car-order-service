@@ -27,6 +27,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -46,7 +47,7 @@ class PaymentServiceImplTest {
     @Mock
     private BookingService bookingService;
 
-    @Mock
+    @Spy
     private PaymentMapper paymentMapper;
     @Mock
     CarServiceImpl carService;
