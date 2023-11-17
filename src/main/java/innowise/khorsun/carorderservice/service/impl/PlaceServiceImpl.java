@@ -6,6 +6,8 @@ import innowise.khorsun.carorderservice.repositorie.PlaceRepository;
 import innowise.khorsun.carorderservice.service.PlaceService;
 import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.error.place.PlaceNotFoundException;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,15 +58,19 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     @Transactional
     public void editPlace(Integer id, PlaceDto updatedPlaceDto) {
-        placeRepository.findById(id).ifPresentOrElse(
-                existingPlace -> {
-                    existingPlace.setName(updatedPlaceDto.getName());
-                    existingPlace.setAddress(updatedPlaceDto.getAddress());
-                    existingPlace.setWorkHours(updatedPlaceDto.getWorkHours());
-                },
-                () -> {
-                    throw new PlaceNotFoundException(PropertyUtil.PLACE_NOT_FOUND, new Date());
-                }
-        );
+        placeRepository
+                .findById(id)
+                .ifPresentOrElse(
+                        existingPlace -> {
+                            GeometryFactory geometryFactory = new GeometryFactory();
+                            existingPlace
+                                    .setLocation(geometryFactory
+                                            .createPoint(new Coordinate(updatedPlaceDto.getLatitude(),
+                                                    updatedPlaceDto.getLongitude())));
+                        },
+                        () -> {
+                            throw new PlaceNotFoundException(PropertyUtil.PLACE_NOT_FOUND, new Date());
+                        }
+                );
     }
 }

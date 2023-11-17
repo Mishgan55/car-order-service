@@ -4,7 +4,7 @@ package innowise.khorsun.carorderservice.util;
 public class PropertyUtil {
     private PropertyUtil() {
     }
-
+    public static final int EARTH_RADIUS = 6371;
     public static final String BOOKING_NOT_FOUND = "Booking not Found ";
     public static final String MESSAGE_ERROR_BOOKING_EXISTING = "You already have an order, please finish your previous order first";
     public static final String RETURN_BOOKING_ERROR_MESSAGE = "You have already return the car";

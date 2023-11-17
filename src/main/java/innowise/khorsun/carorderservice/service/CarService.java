@@ -2,6 +2,8 @@ package innowise.khorsun.carorderservice.service;
 
 import innowise.khorsun.carorderservice.dto.CarDto;
 import innowise.khorsun.carorderservice.model.CarUpdateDto;
+import innowise.khorsun.carorderservice.model.GeoCarResponse;
+import innowise.khorsun.carorderservice.model.GeoRequestModel;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -14,4 +16,5 @@ public interface CarService {
     void editCar(Integer id, CarUpdateDto carUpdateDto);
     List<CarDto> getAvailableCars();
     void changeAvailability(Integer id);
+    List<GeoCarResponse> getAvailableCarWithPlaceByRadius(GeoRequestModel geoRequestModel);
 }

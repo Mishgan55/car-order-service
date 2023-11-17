@@ -4,9 +4,12 @@ import innowise.khorsun.carorderservice.dto.CarDto;
 import innowise.khorsun.carorderservice.entity.Car;
 import innowise.khorsun.carorderservice.mapper.CarMapper;
 import innowise.khorsun.carorderservice.model.CarUpdateDto;
+import innowise.khorsun.carorderservice.model.GeoCarResponse;
+import innowise.khorsun.carorderservice.model.GeoRequestModel;
 import innowise.khorsun.carorderservice.repositorie.CarRepository;
 import innowise.khorsun.carorderservice.service.CarService;
 import innowise.khorsun.carorderservice.service.PlaceService;
+import innowise.khorsun.carorderservice.util.DistanceCalculator;
 import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.error.car.CarNotFoundException;
 import innowise.khorsun.carorderservice.util.error.car.DuplicateCarPlateNumberException;
@@ -14,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -67,6 +71,7 @@ public class CarServiceImpl implements CarService {
     private boolean isCarPlateNumberUnique(String plateNumber) {
         return carRepository.findByPlateNumber(plateNumber).isEmpty();
     }
+
     @Transactional
     public void removeCar(Integer id) {
         carRepository.deleteById(id);
@@ -99,7 +104,27 @@ public class CarServiceImpl implements CarService {
         car.setIsAvailable(!isCarAvailable(carId));
         carRepository.save(car);
     }
-    private boolean isCarAvailable(Integer carId){
+
+    @Override
+    public List<GeoCarResponse> getAvailableCarWithPlaceByRadius(GeoRequestModel geoRequestModel) {
+        List<Car> availableCars = carRepository.findCarsByIsAvailableTrue();
+        List<Car> availableCarsByRadius = new ArrayList<>();
+        for (Car availableCar : availableCars) {
+            double placeLatitude = availableCar.getPlace().getLocation().getCoordinate().getX();
+            double placeLongitude = availableCar.getPlace().getLocation().getCoordinate().getY();
+
+            double distance = DistanceCalculator.calculateDistance(geoRequestModel.getLatitude(),
+                    geoRequestModel.getLongitude(),
+                    placeLatitude, placeLongitude);
+
+            if (distance <= geoRequestModel.getRadius()) {
+                availableCarsByRadius.add(availableCar);
+            }
+        }
+        return availableCarsByRadius.stream().map(carMapper::carToGeoCar).toList();
+    }
+
+    private boolean isCarAvailable(Integer carId) {
         return carRepository
                 .findById(carId)
                 .orElseThrow(() -> new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()))

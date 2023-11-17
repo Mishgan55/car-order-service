@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get My Location</title>
+</head>
+
+<body>
+<style>
+  #map {
+    height: 400px; /* The height is 400 pixels */
+    width: 100%; /* The width is the width of the web page */
+  }
+</style>
+<div id="map"></div>
+<button onclick="getCarsPosition()">Find cars nearby</button>
+
+<!-- prettier-ignore -->
+<script async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-JXYFpBR9K-6I4yoUbtW1Ig8x20gXxhA&callback=initMap">
+</script>
+
+<script>
+  function postData(url = '', data = {}) {
+    return fetch(url, {
+      method: 'POST', // *GET, POST, PUT, DELETE, etc.
+      mode: 'cors', // no-cors, *cors, same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: 'same-origin', // include, *same-origin, omit
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
+    }).then((response) => response.json());
+  }
+
+  function getLocation(onSuccess, onError) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+        enableHighAccuracy: true,
+      });
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
+  }
+
+  function showError(error) {
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        alert('User denied the request for Geolocation.');
+        break;
+      case error.POSITION_UNAVAILABLE:
+        alert('Location information is unavailable.');
+        break;
+      case error.TIMEOUT:
+        alert('The request to get user location timed out.');
+        break;
+      case error.UNKNOWN_ERROR:
+        alert('An unknown error occurred.');
+        break;
+    }
+  }
+
+  async function getCarsPosition() {
+    getLocation(async function (position) {
+      const { latitude, longitude } = position.coords;
+
+      const locationData = {
+        longitude: longitude,
+        latitude: latitude,
+        radius: 5,
+      };
+
+      const response = await postData(
+              'http://localhost:8082/e-car-order/get-car-places',
+              locationData,
+      );
+
+      const icon = {
+        url: 'https://png.pngtree.com/png-clipart/20230126/original/pngtree-car-top-view-image-png-image_8931232.png',
+        size: new google.maps.Size(50, 50), // Set the size of the icon
+        scaledSize: new google.maps.Size(50, 50), // Set the scaled size to match the actual size
+        origin: new google.maps.Point(0, 0), // Set the origin to the top-left corner
+        anchor: new google.maps.Point(25, 25), // Set the anchor to the center of the icon
+      };
+
+      if (Array.isArray(response)) {
+        response.forEach((carDto) => {
+          const { brand, placeDto, model, plateNumber } = carDto;
+          const title = brand + ' ' + model + ' : ' + plateNumber;
+          const { latitude, longitude } = placeDto;
+
+          window.addMarker({
+            title,
+            position: {
+              lat: latitude,
+              lng: longitude,
+            },
+            icon,
+          });
+        });
+      }
+    }, showError);
+  }
+
+  function getCalculateAndDisplayRoute(
+          directionsService,
+          directionsRenderer,
+  ) {
+    return async function ({ origin, destination, travelMode } = {}) {
+      // available travel mods BICYCLING | WALKING | DRIVING | TRANSITING
+      try {
+        const response = await directionsService.route({
+          origin,
+          destination,
+          travelMode: google.maps.TravelMode[travelMode || 'DRIVING'],
+        });
+
+        directionsRenderer.setDirections(response);
+      } catch (e) {
+        window.alert('Directions request failed due to ' + status);
+      }
+    };
+  }
+
+  function initMap() {
+    getLocation(function (position) {
+      const { latitude, longitude } = position.coords;
+
+      const mapCenterPosition = { lat: latitude, lng: longitude };
+      const zoom = 10;
+
+      // The map, centered your current location
+      const map = new google.maps.Map(document.getElementById('map'), {
+        zoom: zoom,
+        center: mapCenterPosition,
+        mapId: 'DEMO_MAP_ID',
+      });
+
+      // init direction services
+      const directionsRenderer = new google.maps.DirectionsRenderer();
+      const directionsService = new google.maps.DirectionsService();
+
+      directionsRenderer.setMap(map);
+
+      const calculateAndDisplayRoute = getCalculateAndDisplayRoute(
+              directionsService,
+              directionsRenderer,
+      );
+
+      // Create an info window to share between markers.
+      const infoWindow = new google.maps.InfoWindow();
+
+      function addMarker(props) {
+        const marker = new google.maps.Marker({
+          map: map,
+          ...props,
+        });
+
+        // Add a click listener for each marker, and set up the info window.
+        marker.addListener('click', () => {
+          infoWindow.close();
+          infoWindow.setContent(marker.title);
+          infoWindow.open(marker.map, marker);
+
+          calculateAndDisplayRoute({
+            origin: mapCenterPosition,
+            destination: marker.position,
+          });
+        });
+
+        return marker;
+      }
+
+      // The marker, positioned at your location at the center of the map
+      addMarker({
+        position: mapCenterPosition,
+        title: 'Your current position 🙋‍',
+      });
+
+      window.addMarker = addMarker;
+    }, showError);
+  }
+</script>
+</body>
+</html>
