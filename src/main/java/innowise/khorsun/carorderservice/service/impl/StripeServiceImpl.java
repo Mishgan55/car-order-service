@@ -1,6 +1,5 @@
 package innowise.khorsun.carorderservice.service.impl;
 
-import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -18,29 +17,28 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import static com.stripe.Stripe.*;
 
 
 @Service
 public class StripeServiceImpl implements StripeService {
-
     private final PaymentService paymentService;
     private final PaymentMapper paymentMapper;
-
     @Value("${STRIPE_API_KEY}")
-    private String stripeApiKey;
+    private static String stripeApiKey;
 
     @Autowired
     public StripeServiceImpl(PaymentService paymentService, PaymentMapper paymentMapper) {
+        apiKey = stripeApiKey;
         this.paymentService = paymentService;
         this.paymentMapper = paymentMapper;
     }
 
     @Override
     public SessionCreateParams createPaymentSession(Integer userId, Type type) {
-        Stripe.apiKey = stripeApiKey;
         SessionCreateParams.Builder builder = new SessionCreateParams.Builder();
         builder.addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD);
         builder.setMode(SessionCreateParams.Mode.PAYMENT);
@@ -60,8 +58,7 @@ public class StripeServiceImpl implements StripeService {
                                         )
                                         .setUnitAmount(
                                                 paymentService
-                                                        .calculatePaymentAmount(userId)
-                                                        .longValue())
+                                                        .calculatePaymentAmount(userId))
                                         .build()
                         )
                         .setQuantity(1L)
@@ -83,14 +80,14 @@ public class StripeServiceImpl implements StripeService {
             if (sessionUrl == null || sessionId == null) {
                 throw new PaymentSessionException(PropertyUtil.INVALID_SESSION_MESSAGE);
             }
-            BigDecimal amountToPay = new BigDecimal(session.getAmountTotal());
+            Long amountTotal = session.getAmountTotal();
             PaymentDto paymentDto = new PaymentDto();
             paymentDto.setUserId(userId);
             paymentDto.setSessionId(sessionId);
             paymentDto.setUrl(new URL(sessionUrl));
             paymentDto.setType(paymentRequestInfoDto.getType());
             paymentDto.setStatus(Status.PENDING);
-            paymentDto.setPaymentAmount(amountToPay.divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP));
+            paymentDto.setPaymentAmount(BigDecimal.valueOf(amountTotal));
             return paymentMapper.paymentToPaymentDto(paymentService.addPayment(paymentDto));
         } catch (StripeException e) {
             throw new PaymentSessionException(PropertyUtil.STRIPE_ERROR_MESSAGE + e.getMessage());

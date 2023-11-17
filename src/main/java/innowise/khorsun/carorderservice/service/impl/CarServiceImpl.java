@@ -40,7 +40,7 @@ public class CarServiceImpl implements CarService {
     }
 
     public List<CarDto> getAllCars() {
-        return carRepository.findAll()
+      return carRepository.findAll()
                 .stream()
                 .map(carMapper::carToCarDto)
                 .toList();
@@ -55,7 +55,7 @@ public class CarServiceImpl implements CarService {
     }
 
     private void checkIfPlaceExist(Integer placeId) {
-        placeService.getPlaceDtoById(placeId);
+        placeService.getPlaceById(placeId);
     }
 
     private void checkIfDuplicateCarPlateNumberExist(String plateNumber) {
@@ -87,7 +87,10 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public List<CarDto> getAvailableCars() {
-        return carRepository.findCarsByIsAvailableTrue().stream().map(carMapper::carToCarDto).toList();
+        return carRepository.findCarsByIsAvailableTrue()
+                .orElseThrow(()->new CarNotFoundException(PropertyUtil.CAR_NOT_FOUND, new Date()))
+                .stream()
+                .map(carMapper::carToCarDto).toList();
     }
 
     @Override

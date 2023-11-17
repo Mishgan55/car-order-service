@@ -7,7 +7,7 @@ import java.util.List;
 
 @Service
 public interface PlaceService {
-    PlaceDto getPlaceDtoById(Integer id);
+    PlaceDto getPlaceById(Integer id);
     List<PlaceDto> getAllPlaces();
     void addPlace(PlaceDto placeDto);
     void removePlace(Integer id);

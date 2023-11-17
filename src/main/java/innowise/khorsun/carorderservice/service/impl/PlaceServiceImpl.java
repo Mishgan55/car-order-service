@@ -27,7 +27,7 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
-    public PlaceDto getPlaceDtoById(Integer id) {
+    public PlaceDto getPlaceById(Integer id) {
         return placeRepository.findById(id)
                 .map(placeMapper::placeToPlaceDto)
                 .orElseThrow(() -> new PlaceNotFoundException(PropertyUtil.PLACE_NOT_FOUND, new Date()));
