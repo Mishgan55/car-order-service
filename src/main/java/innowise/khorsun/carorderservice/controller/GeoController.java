@@ -8,8 +8,10 @@ import innowise.khorsun.carorderservice.model.RouteRequest;
 import innowise.khorsun.carorderservice.service.CarService;
 import innowise.khorsun.carorderservice.service.impl.RouteServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +23,8 @@ import java.util.List;
 
 @Controller
 public class GeoController {
+    @Value("${google.maps.api.key}")
+    private String apiKey;
     private final CarService carService;
     private final RouteServiceImpl routeService;
     @Autowired
@@ -30,8 +34,9 @@ public class GeoController {
     }
 
     @GetMapping("/get-location")
-    public String getMyLocation(){
-       return "geo/get-location";
+    public String getMyLocation(Model model){
+        model.addAttribute("apiKey", apiKey);
+        return "geo/get-location";
    }
 
     @ResponseBody
