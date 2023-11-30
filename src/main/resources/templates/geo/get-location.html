@@ -69,11 +69,11 @@
       const locationData = {
         longitude: longitude,
         latitude: latitude,
-        radius: 5,
+        radius: 2,
       };
 
       const response = await postData(
-              'http://localhost:8082/e-car-order/get-car-places',
+              'http://localhost:8083/e-car-order/get-car-places',
               locationData,
       );
 

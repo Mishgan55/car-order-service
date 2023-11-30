@@ -13,14 +13,18 @@ import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.enums.Status;
 import innowise.khorsun.carorderservice.util.enums.Type;
 import innowise.khorsun.carorderservice.util.error.payment.PaymentSessionException;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Service
@@ -28,14 +32,21 @@ public class StripeServiceImpl implements StripeService {
 
     private final PaymentService paymentService;
     private final PaymentMapper paymentMapper;
+    private final UserServiceImpl userService;
+    private final KafkaTemplate<String, Map<String, String>> kafkaTemplate;
+    @Value("${spring.kafka.topic.notification.link-for-payment}")
+    private String linkForPaymentTopic;
 
     @Value("${STRIPE_API_KEY}")
     private String stripeApiKey;
 
     @Autowired
-    public StripeServiceImpl(PaymentService paymentService, PaymentMapper paymentMapper) {
+    public StripeServiceImpl(PaymentService paymentService, PaymentMapper paymentMapper,
+                             UserServiceImpl userService, KafkaTemplate<String, Map<String, String>> kafkaTemplate) {
         this.paymentService = paymentService;
         this.paymentMapper = paymentMapper;
+        this.userService = userService;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
@@ -80,6 +91,9 @@ public class StripeServiceImpl implements StripeService {
             String sessionId = session.getId();
             Integer userId = Integer.valueOf(session.getClientReferenceId());
 
+            //send kafka topic for notification service to sendNotificationWithPaymentLink() method
+            sendNotificationWithLinkAndEmail(userService.getUserById(paymentRequestInfoDto.getUserId()).getEmail(),sessionUrl);
+
             if (sessionUrl == null || sessionId == null) {
                 throw new PaymentSessionException(PropertyUtil.INVALID_SESSION_MESSAGE);
             }
@@ -97,5 +111,18 @@ public class StripeServiceImpl implements StripeService {
         } catch (MalformedURLException e) {
             throw new PaymentSessionException(PropertyUtil.MALFORMED_URL_MESSAGE + e.getMessage());
         }
+    }
+    /**
+     * Create json from map and send it to kafka
+     */
+    private void sendNotificationWithLinkAndEmail(String email,String link){
+        //send kafka topic for notification service for sendNotificationWithPaymentLink() method
+        Map<String, String> map = new HashMap<>();
+        map.put("email", email);
+        map.put("link", link);
+        //Create json record for kafka
+        ProducerRecord<String, Map<String, String>> recordMessage = new ProducerRecord<>(linkForPaymentTopic, map);
+        kafkaTemplate.send(recordMessage);
+        kafkaTemplate.flush();
     }
 }

@@ -14,7 +14,7 @@ public class PropertyUtil {
     public static final String PAYMENT_NOT_FOUND = "Payment not Found";
     public static final String INVALID_KEY_MESSAGE = "Invalid payment";
     public static final String SUCCESSFULLY_PAYMENT_MESSAGE = "Your payment was successful!";
-    public static final String PAYMENT_URL = "http://localhost:8082/e-car-order/payments";
+    public static final String PAYMENT_URL = "http://localhost:8083/e-car-order/payments";
     public static final String INVALID_SESSION_MESSAGE = "Invalid session data received from Stripe";
     public static final String STRIPE_ERROR_MESSAGE = "Stripe error: ";
     public static final String MALFORMED_URL_MESSAGE = "Malformed URL: ";
