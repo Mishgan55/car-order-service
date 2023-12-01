@@ -4,7 +4,7 @@ package innowise.khorsun.carorderservice.util;
 public class PropertyUtil {
     private PropertyUtil() {
     }
-
+    public static final int EARTH_RADIUS = 6371;
     public static final String BOOKING_NOT_FOUND = "Booking not Found ";
     public static final String MESSAGE_ERROR_BOOKING_EXISTING = "You already have an order, please finish your previous order first";
     public static final String RETURN_BOOKING_ERROR_MESSAGE = "You have already return the car";
@@ -14,7 +14,7 @@ public class PropertyUtil {
     public static final String PAYMENT_NOT_FOUND = "Payment not Found";
     public static final String INVALID_KEY_MESSAGE = "Invalid payment";
     public static final String SUCCESSFULLY_PAYMENT_MESSAGE = "Your payment was successful!";
-    public static final String PAYMENT_URL = "http://localhost:8082/e-car-order/payments";
+    public static final String PAYMENT_URL = "http://localhost:8083/e-car-order/payments";
     public static final String INVALID_SESSION_MESSAGE = "Invalid session data received from Stripe";
     public static final String STRIPE_ERROR_MESSAGE = "Stripe error: ";
     public static final String MALFORMED_URL_MESSAGE = "Malformed URL: ";

@@ -1,8 +1,6 @@
 package innowise.khorsun.carorderservice.entity;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,9 +22,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "cars")
-@Getter
-@Setter
-@RequiredArgsConstructor
+@Data
 public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,7 +47,7 @@ public class Car {
     @Column(name = "daily_fee")
     @NotNull
     private BigDecimal dailyFee;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "place_id", referencedColumnName = "id")
     private Place place;
     @OneToMany(mappedBy = "car")

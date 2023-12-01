@@ -12,6 +12,8 @@ import innowise.khorsun.carorderservice.service.PaymentService;
 import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.enums.Status;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,14 +29,19 @@ public class PaymentServiceImpl implements PaymentService {
     private final BookingService bookingService;
     private final PaymentMapper paymentMapper;
     private final CarService carService;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    @Value("${spring.kafka.topic.notification.payment}")
+    private String notificationPayment;
+
     @Autowired
     public PaymentServiceImpl(PaymentRepository paymentRepository,
-                              BookingService bookingService, PaymentMapper paymentMapper, CarService carService) {
+                              BookingService bookingService, PaymentMapper paymentMapper, CarService carService,
+                              KafkaTemplate<String, String> kafkaTemplate) {
         this.paymentRepository = paymentRepository;
         this.bookingService = bookingService;
         this.paymentMapper = paymentMapper;
         this.carService = carService;
-
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
@@ -77,6 +84,11 @@ public class PaymentServiceImpl implements PaymentService {
         booking.setStatus(Status.PAYED);
         payment.setPaymentDate(LocalDateTime.now());
         payment.setStatus(Status.PAYED);
+
+        //Send kafka topic for notification-service to sendNotificationAboutSuccessPayment() method
+        kafkaTemplate.send(notificationPayment, payment.getUser().getEmail());
+        kafkaTemplate.flush();
+
         paymentRepository.save(payment);
         return PropertyUtil.SUCCESSFULLY_PAYMENT_MESSAGE;
     }
