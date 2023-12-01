@@ -8,6 +8,7 @@ import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.LatLng;
 import com.google.maps.model.TravelMode;
 import innowise.khorsun.carorderservice.model.RouteRequest;
+import innowise.khorsun.carorderservice.service.RouteService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.io.IOException;
 
 @Service
 @Transactional(readOnly = true)
-public class RouteServiceImpl {
+public class RouteServiceImpl implements RouteService {
     @Value("${google.maps.api.key}")
     private String googleMapsApiKey;
 

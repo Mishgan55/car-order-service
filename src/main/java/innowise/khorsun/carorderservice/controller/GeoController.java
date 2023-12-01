@@ -5,8 +5,8 @@ import com.google.maps.model.DirectionsRoute;
 import innowise.khorsun.carorderservice.model.GeoCarResponse;
 import innowise.khorsun.carorderservice.model.GeoRequestModel;
 import innowise.khorsun.carorderservice.model.RouteRequest;
-import innowise.khorsun.carorderservice.service.impl.CarServiceImpl;
-import innowise.khorsun.carorderservice.service.impl.RouteServiceImpl;
+import innowise.khorsun.carorderservice.service.CarService;
+import innowise.khorsun.carorderservice.service.RouteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +25,10 @@ import java.util.List;
 public class GeoController {
     @Value("${google.maps.api.key}")
     private String apiKey;
-    private final CarServiceImpl carService;
-    private final RouteServiceImpl routeService;
+    private final CarService carService;
+    private final RouteService routeService;
     @Autowired
-    public GeoController(CarServiceImpl carService, RouteServiceImpl routeService) {
+    public GeoController(CarService carService, RouteService routeService) {
         this.carService = carService;
         this.routeService = routeService;
     }
