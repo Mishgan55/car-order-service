@@ -51,12 +51,12 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public BigDecimal calculatePaymentAmount(Integer userId) {
+    public Long calculatePaymentAmount(Integer userId) {
         Booking booking = bookingService.getBookingByUserIdAndStatus(userId, Status.PENDING);
         CarDto carDto = carService.getCarById(booking.getCar().getId());
         long minutes = Duration.between(booking.getStartDateTime(), booking.getEndDateTime()).toMinutes();
         BigDecimal dailyFee = carDto.getDailyFee();
-        return dailyFee.multiply(BigDecimal.valueOf(minutes)).multiply(BigDecimal.valueOf(100));
+        return dailyFee.multiply(BigDecimal.valueOf(minutes)).longValue();
     }
 
     @Override
@@ -68,7 +68,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment findBySessionId(String sessionId) {
-        return paymentRepository.findBySessionId(sessionId);
+        return paymentRepository
+                .findBySessionId(sessionId);
     }
 
     @Transactional

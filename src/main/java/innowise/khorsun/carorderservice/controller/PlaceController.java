@@ -26,7 +26,7 @@ public class PlaceController {
     }
     @GetMapping("/{id}")
     public ResponseEntity<PlaceDto> getPlaceDto(@PathVariable("id") Integer id){
-        return ResponseEntity.ok(placeService.getPlaceDtoById(id));
+        return ResponseEntity.ok(placeService.getPlaceById(id));
     }
     @GetMapping()
     public ResponseEntity<List<PlaceDto>> getAllPlaces(){

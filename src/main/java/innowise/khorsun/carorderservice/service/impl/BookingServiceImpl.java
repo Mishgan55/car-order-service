@@ -12,6 +12,7 @@ import innowise.khorsun.carorderservice.util.PropertyUtil;
 import innowise.khorsun.carorderservice.util.enums.Status;
 import innowise.khorsun.carorderservice.util.error.booking.BookingExistingException;
 import innowise.khorsun.carorderservice.util.error.booking.BookingNotFoundException;
+import innowise.khorsun.carorderservice.util.error.user.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getBookingsByUserId(Integer userId) {
+    public List<BookingDto> getBookingsByUserId(Integer userId) throws UserNotFoundException {
         checkIfUserExist(userId);
         return bookingRepository
                 .findBookingByUserId(userId)

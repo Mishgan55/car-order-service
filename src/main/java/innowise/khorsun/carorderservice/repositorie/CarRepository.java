@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface CarRepository extends JpaRepository<Car,Integer> {
     Optional<Car> findByPlateNumber(String plateNumber);
 
-    List<Car> findCarsByIsAvailableTrue();
+    Optional<List<Car>> findCarsByIsAvailableTrue();
 }
